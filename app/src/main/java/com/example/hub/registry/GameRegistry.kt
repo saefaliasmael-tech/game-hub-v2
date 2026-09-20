@@ -1,0 +1,262 @@
+package com.example.hub.registry
+
+import androidx.compose.ui.graphics.Color
+import com.example.hub.model.GameCategory
+import com.example.hub.model.GameInfo
+
+/**
+ * Central registry of games inside Game Hub.
+ * To add a new game in future updates:
+ * 1. Build the game under com.example.games.<gamename>
+ * 2. Add an entry here with a unique id, route, and metadata.
+ * 3. Add the navigation composable in MainActivity.
+ *
+ * Notice: Zero game logic, state, or currencies exist here.
+ */
+object GameRegistry {
+
+    const val WATER_SORT_ID = "water_sort"
+    const val COLOR_SEQUENCE_ID = "color_sequence"
+    const val PUZZLE_2048_ID = "game_2048"
+    const val MASTERMIND_ID = "mastermind"
+    const val UNBLOCK_ME_ID = "unblock_me"
+    const val MEMORY_CARDS_ID = "memory_cards"
+    const val STOP_THE_TIME_ID = "stop_the_time"
+    const val COLOR_SWITCH_ID = "color_switch"
+    const val KNIFE_HIT_ID = "knife_hit"
+    const val BALL_SORT_ID = "ball_sort"
+    const val BLOCK_PUZZLE_ID = "block_puzzle"
+
+    private val gamesList: List<GameInfo> = listOf(
+        GameInfo(
+            id = WATER_SORT_ID,
+            name = "Water Sort Puzzle",
+            description = "Sort colored waters into matching glass tubes with pure logic and soothing physics.",
+            longDescription = "Experience a relaxing and brain-challenging puzzle adventure! Carefully pour water between bottles until every tube contains only a single uniform color. Features 8 distinct fantasy worlds, daily challenge puzzles, customizable vial skins, atmospheric sound effects, and intelligent move undo.",
+            category = GameCategory.PUZZLE,
+            version = "4.0",
+            isAvailable = true,
+            isFeatured = true,
+            isNew = false,
+            isComingSoon = false,
+            primaryColor = Color(0xFF00B4D8),
+            secondaryColor = Color(0xFF03045E),
+            accentColor = Color(0xFF48CAE4),
+            entryRoute = "watersort_home",
+            order = 1,
+            totalLevelsEstimate = "100+ Levels",
+            difficultyEstimate = "Casual → Master"
+        ),
+        GameInfo(
+            id = COLOR_SEQUENCE_ID,
+            name = "Color Sequence",
+            description = "Memorize the sequence of glowing colors and repeat the pattern without mistakes.",
+            longDescription = "A vibrant pattern recognition and memory challenge! Watch the glowing colored shapes appear in sequence, remember the exact order, and tap them back accurately as the sequence grows longer and faster.",
+            category = GameCategory.CASUAL,
+            version = "1.0",
+            isAvailable = true,
+            isFeatured = false,
+            isNew = false,
+            isComingSoon = false,
+            primaryColor = Color(0xFF8B5CF6),
+            secondaryColor = Color(0xFF4C1D95),
+            accentColor = Color(0xFFA78BFA),
+            entryRoute = "colorsequence_home",
+            order = 2,
+            totalLevelsEstimate = "30 Levels",
+            difficultyEstimate = "Memory & Focus"
+        ),
+        GameInfo(
+            id = PUZZLE_2048_ID,
+            name = "2048 Infinite",
+            description = "Slide and merge matching number tiles to reach 2048 and beyond.",
+            longDescription = "Swipe up, down, left, and right to merge identical number tiles. Plan your moves ahead to unlock the legendary 2048 tile, and continue beyond for highest score records.",
+            category = GameCategory.LOGIC,
+            version = "1.0",
+            isAvailable = true,
+            isFeatured = false,
+            isNew = false,
+            isComingSoon = false,
+            primaryColor = Color(0xFFE76F51),
+            secondaryColor = Color(0xFF264653),
+            accentColor = Color(0xFFF4A261),
+            entryRoute = "game2048_home",
+            order = 3,
+            totalLevelsEstimate = "Endless Mode",
+            difficultyEstimate = "Tactical"
+        ),
+        GameInfo(
+            id = MASTERMIND_ID,
+            name = "Mastermind",
+            description = "Crack the secret color code through logic, deduction, and feedback pegs.",
+            longDescription = "The classic code-breaking game! Deduce the hidden sequence of colors using precise feedback indicators for exact positions and matching colors across 100 progressive campaign levels, daily challenges, and custom difficulties.",
+            category = GameCategory.LOGIC,
+            version = "1.0",
+            isAvailable = true,
+            isFeatured = false,
+            isNew = false,
+            isComingSoon = false,
+            primaryColor = Color(0xFF6366F1),
+            secondaryColor = Color(0xFF312E81),
+            accentColor = Color(0xFF818CF8),
+            entryRoute = "mastermind_home",
+            order = 4,
+            totalLevelsEstimate = "100 Levels",
+            difficultyEstimate = "Deduction & Logic"
+        ),
+        GameInfo(
+            id = UNBLOCK_ME_ID,
+            name = "Unblock Me",
+            description = "Slide wooden blocks to clear the path for the red block to escape.",
+            longDescription = "A timeless sliding block puzzle on a 6x6 grid. Strategically maneuver horizontal and vertical wooden obstacles to free the crimson wood block. Features 100 crafted puzzles across 5 difficulties, BFS optimal hint solver, and undo support.",
+            category = GameCategory.PUZZLE,
+            version = "1.0",
+            isAvailable = true,
+            isFeatured = false,
+            isNew = false,
+            isComingSoon = false,
+            primaryColor = Color(0xFFE63946),
+            secondaryColor = Color(0xFF3E2723),
+            accentColor = Color(0xFFFFB703),
+            entryRoute = "unblock_home",
+            order = 5,
+            totalLevelsEstimate = "100 Puzzles",
+            difficultyEstimate = "Tactical Sliding"
+        ),
+        GameInfo(
+            id = MEMORY_CARDS_ID,
+            name = "Memory Card Match",
+            description = "Flip and match thematic pairs of cards across multiple board sizes.",
+            longDescription = "Train and sharpen your visual memory with smooth 3D card flipping, 6 rich icon themes (Animals, Food, Space, Sports, Nature, Tech), 5 board sizes (up to 6x8 Master), and time attack & limited move modes.",
+            category = GameCategory.CASUAL,
+            version = "1.0",
+            isAvailable = true,
+            isFeatured = false,
+            isNew = false,
+            isComingSoon = false,
+            primaryColor = Color(0xFF06B6D4),
+            secondaryColor = Color(0xFF164E63),
+            accentColor = Color(0xFF22D3EE),
+            entryRoute = "memory_home",
+            order = 6,
+            totalLevelsEstimate = "5 Grid Sizes",
+            difficultyEstimate = "Visual Recall"
+        ),
+        GameInfo(
+            id = STOP_THE_TIME_ID,
+            name = "Stop the Time",
+            description = "Stop the clock at the exact target time with millisecond precision.",
+            longDescription = "Test your inner clock and reflex precision! Stop the timer at exact millisecond marks across 100 Campaign levels, Blind timing mode, speed illusions, daily deterministic challenges, and pass-and-play local multiplayer.",
+            category = GameCategory.ARCADE,
+            version = "1.0",
+            isAvailable = true,
+            isFeatured = true,
+            isNew = true,
+            isComingSoon = false,
+            primaryColor = Color(0xFF10B981),
+            secondaryColor = Color(0xFF064E3B),
+            accentColor = Color(0xFF34D399),
+            entryRoute = "stoptime_home",
+            order = 7,
+            totalLevelsEstimate = "100 Levels",
+            difficultyEstimate = "Precision & Reflex"
+        ),
+        GameInfo(
+            id = COLOR_SWITCH_ID,
+            name = "Color Switch",
+            description = "Bounce through multi-colored obstacles matching your ball's color.",
+            longDescription = "Arcade reflex sensation! Tap to keep your ball airborne and pass safely through matching colored segments of spinning circles, crosses, and concentric rings. Includes 100 campaign levels, endless climb, and color-blind symbol support.",
+            category = GameCategory.ARCADE,
+            version = "1.0",
+            isAvailable = true,
+            isFeatured = true,
+            isNew = true,
+            isComingSoon = false,
+            primaryColor = Color(0xFF00E5FF),
+            secondaryColor = Color(0xFF0F172A),
+            accentColor = Color(0xFFFF007F),
+            entryRoute = "colorswitch_home",
+            order = 8,
+            totalLevelsEstimate = "100 Levels",
+            difficultyEstimate = "Reflex & Timing"
+        ),
+        GameInfo(
+            id = KNIFE_HIT_ID,
+            name = "Knife Hit",
+            description = "Throw knives into rotating targets, slice apples, and shatter epic bosses.",
+            longDescription = "Precision knife-throwing arcade action! Launch daggers into spinning logs, fruits, and shields without hitting existing blades. Conquer 100 stages, epic Boss battles every 5 levels, apple rewards, and unlock 8 unique cosmetic blades.",
+            category = GameCategory.ARCADE,
+            version = "1.0",
+            isAvailable = true,
+            isFeatured = true,
+            isNew = true,
+            isComingSoon = false,
+            primaryColor = Color(0xFFEF4444),
+            secondaryColor = Color(0xFF450A0A),
+            accentColor = Color(0xFFFFB703),
+            entryRoute = "knifehit_home",
+            order = 9,
+            totalLevelsEstimate = "100 Stages",
+            difficultyEstimate = "Timing & Bosses"
+        ),
+        GameInfo(
+            id = BALL_SORT_ID,
+            name = "Ball Sort Master",
+            description = "Stack and sort colorful balls into matching tubes.",
+            longDescription = "A vibrant ball stacking brain teaser! Drop bouncing spheres into test tubes to sort them by color pattern.",
+            category = GameCategory.PUZZLE,
+            version = "1.0",
+            isAvailable = false,
+            isFeatured = false,
+            isNew = false,
+            isComingSoon = true,
+            primaryColor = Color(0xFFFF7B00),
+            secondaryColor = Color(0xFF6A040F),
+            accentColor = Color(0xFFFFB703),
+            entryRoute = "coming_soon",
+            order = 10,
+            totalLevelsEstimate = "Coming Soon",
+            difficultyEstimate = "Easy → Hard"
+        ),
+        GameInfo(
+            id = BLOCK_PUZZLE_ID,
+            name = "Block Puzzle Classic",
+            description = "Fit geometric blocks into the 8x8 grid to clear full lines.",
+            longDescription = "Place various block shapes on the board, complete vertical and horizontal lines to clear space and rack up massive combo streaks.",
+            category = GameCategory.LOGIC,
+            version = "1.0",
+            isAvailable = false,
+            isFeatured = false,
+            isNew = false,
+            isComingSoon = true,
+            primaryColor = Color(0xFF7209B7),
+            secondaryColor = Color(0xFF3A0CA3),
+            accentColor = Color(0xFFF72585),
+            entryRoute = "coming_soon",
+            order = 11,
+            totalLevelsEstimate = "Endless Mode",
+            difficultyEstimate = "Mind Challenging"
+        )
+    )
+
+    fun getAllGames(): List<GameInfo> = gamesList.sortedBy { it.order }
+
+    fun getGameById(id: String): GameInfo? = gamesList.find { it.id == id }
+
+    fun getFeaturedGame(): GameInfo? = gamesList.find { it.isFeatured } ?: gamesList.firstOrNull()
+
+    fun getGamesByCategory(category: GameCategory): List<GameInfo> {
+        if (category == GameCategory.ALL) return getAllGames()
+        return gamesList.filter { it.category == category }
+    }
+
+    fun searchGames(query: String): List<GameInfo> {
+        val trimmed = query.trim()
+        if (trimmed.isEmpty()) return getAllGames()
+        return gamesList.filter {
+            it.name.contains(trimmed, ignoreCase = true) ||
+            it.description.contains(trimmed, ignoreCase = true) ||
+            it.category.name.contains(trimmed, ignoreCase = true)
+        }
+    }
+}
