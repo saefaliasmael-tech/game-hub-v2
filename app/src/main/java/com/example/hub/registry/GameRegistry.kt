@@ -24,6 +24,12 @@ object GameRegistry {
     const val STOP_THE_TIME_ID = "stop_the_time"
     const val COLOR_SWITCH_ID = "color_switch"
     const val KNIFE_HIT_ID = "knife_hit"
+    const val AA_ID = "aa"
+    const val MINI_TD_ID = "mini_tower_defense"
+    const val ROPE_AROUND_ID = "rope_around"
+    const val ROPE_RESCUE_ID = "rope_rescue"
+    const val PIC_PUZZLE_ID = "pic_puzzle"
+    const val PULL_THE_PIN_ID = "pull_the_pin"
     const val BALL_SORT_ID = "ball_sort"
     const val BLOCK_PUZZLE_ID = "block_puzzle"
 
@@ -198,6 +204,120 @@ object GameRegistry {
             order = 9,
             totalLevelsEstimate = "100 Stages",
             difficultyEstimate = "Timing & Bosses"
+        ),
+        GameInfo(
+            id = AA_ID,
+            name = "AA",
+            description = "Pin needles onto the rotating wheel without colliding with existing needles.",
+            longDescription = "A masterclass in rhythm, focus, and precision! Tap to shoot numbered pins into a spinning central sphere. Master 100 handcrafted levels featuring reversing rotations, speed shifts, and dynamic obstacles.",
+            category = GameCategory.ARCADE,
+            version = "1.0",
+            isAvailable = true,
+            isFeatured = true,
+            isNew = true,
+            isComingSoon = false,
+            primaryColor = Color(0xFF89B4FA),
+            secondaryColor = Color(0xFF1E1E2E),
+            accentColor = Color(0xFFA6E3A1),
+            entryRoute = "aa_home",
+            order = 10,
+            totalLevelsEstimate = "100 Levels",
+            difficultyEstimate = "Precision & Speed"
+        ),
+        GameInfo(
+            id = MINI_TD_ID,
+            name = "Mini Tower Defense",
+            description = "Build Archer, Cannon, and Magic towers to stop incoming waves of mythical beasts.",
+            longDescription = "Command tactical bastions across varied strategic paths! Deploy Archer, Cannon, and Magic towers, upgrade firepower and range, manage your battle gold, and defend the castle gates across 100 tactical missions.",
+            category = GameCategory.STRATEGY,
+            version = "1.0",
+            isAvailable = true,
+            isFeatured = true,
+            isNew = true,
+            isComingSoon = false,
+            primaryColor = Color(0xFF00B4D8),
+            secondaryColor = Color(0xFF1B2A4A),
+            accentColor = Color(0xFFFFD166),
+            entryRoute = "minitd_home",
+            order = 11,
+            totalLevelsEstimate = "100 Levels",
+            difficultyEstimate = "Tactical & Strategic"
+        ),
+        GameInfo(
+            id = ROPE_AROUND_ID,
+            name = "Rope Around",
+            description = "Wrap the glowing elastic rope around all pegs to illuminate them without hitting hazards.",
+            longDescription = "A satisfying geometric tactile puzzle! Drag your neon rope smoothly around pins to light them all up. Navigate intricate polygons, stars, and tight corridors while avoiding danger zones across 100 levels.",
+            category = GameCategory.PUZZLE,
+            version = "1.0",
+            isAvailable = true,
+            isFeatured = true,
+            isNew = true,
+            isComingSoon = false,
+            primaryColor = Color(0xFFFF70A6),
+            secondaryColor = Color(0xFF2B2D42),
+            accentColor = Color(0xFF06D6A0),
+            entryRoute = "ropearound_home",
+            order = 12,
+            totalLevelsEstimate = "100 Levels",
+            difficultyEstimate = "Spatial Logic"
+        ),
+        GameInfo(
+            id = ROPE_RESCUE_ID,
+            name = "Rope Rescue",
+            description = "Route zipline cables around pulleys and past spinning sawblades to evacuate hostages.",
+            longDescription = "A thrilling physics evacuation puzzle! Guide the rescue tension cable past deadly rotating sawblades, weave securely through mechanical pulleys, and anchor directly into the ambulance station. Press and hold to slide your stranded civilians to safety across 100 hazardous rescue missions.",
+            category = GameCategory.PUZZLE,
+            version = "1.0",
+            isAvailable = true,
+            isFeatured = true,
+            isNew = true,
+            isComingSoon = false,
+            primaryColor = Color(0xFF38BDF8),
+            secondaryColor = Color(0xFF1E293B),
+            accentColor = Color(0xFF10B981),
+            entryRoute = "roperescue_home",
+            order = 13,
+            totalLevelsEstimate = "100 Levels",
+            difficultyEstimate = "Tactical Rescue"
+        ),
+        GameInfo(
+            id = PIC_PUZZLE_ID,
+            name = "Pic Puzzle",
+            description = "Slide and reconstruct vibrant mosaic artworks across 3x3, 4x4, and 5x5 grid masteries.",
+            longDescription = "An artistic sliding tile puzzle game! Reassemble shattered vibrant landscapes, cyberpunk metropolises, cosmic nebulae, and ancient landmarks. Features move counters, precision timers, dynamic number hints, and thumbnail preview across 100 unique levels.",
+            category = GameCategory.PUZZLE,
+            version = "1.0",
+            isAvailable = true,
+            isFeatured = true,
+            isNew = true,
+            isComingSoon = false,
+            primaryColor = Color(0xFF52B788),
+            secondaryColor = Color(0xFF1F2421),
+            accentColor = Color(0xFFFFD166),
+            entryRoute = "picpuzzle_home",
+            order = 14,
+            totalLevelsEstimate = "100 Levels",
+            difficultyEstimate = "Visual & Logic"
+        ),
+        GameInfo(
+            id = PULL_THE_PIN_ID,
+            name = "Pull the Pin",
+            description = "Slide pins strategically, colorize neutral spheres, and guide balls safely into the collection vat.",
+            longDescription = "A clever physics puzzle where precision pulling is key! Navigate intricate gravitational chambers, diffuse vibrant color to dull spheres, avoid destructive explosive ordnance, and funnel your target count safely into the collection basket across 100 tactical levels.",
+            category = GameCategory.PUZZLE,
+            version = "1.0",
+            isAvailable = true,
+            isFeatured = true,
+            isNew = true,
+            isComingSoon = false,
+            primaryColor = Color(0xFFFF9F1C),
+            secondaryColor = Color(0xFF261C14),
+            accentColor = Color(0xFFFFBF69),
+            entryRoute = "pullthepin_home",
+            order = 15,
+            totalLevelsEstimate = "100 Levels",
+            difficultyEstimate = "Physics & Gravity"
         ),
         GameInfo(
             id = BALL_SORT_ID,

@@ -220,6 +220,7 @@ fun HubHomeScreen(
                                         GameCategory.LOGIC -> stringResource(R.string.category_logic)
                                         GameCategory.CASUAL -> stringResource(R.string.category_casual)
                                         GameCategory.BOARD -> stringResource(R.string.category_board)
+                                        GameCategory.STRATEGY -> stringResource(R.string.category_strategy)
                                     }
                                 )
                             },

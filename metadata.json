@@ -1,6 +1,6 @@
 {
   "name": "Game Hub",
-  "description": "Multi-game hub with offline games: Water Sort, Stop the Time, Color Switch, Knife Hit, Mastermind, 2048, Unblock Me, and Memory Cards.",
+  "description": "Multi-game arcade & puzzle hub featuring Water Sort, Pull the Pin, Pic Puzzle, Rope Rescue, Rope Around, aa, Mini TD, Knife Hit, Color Switch, Stop the Time, Mastermind, 2048, Unblock Me, and Memory Cards.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

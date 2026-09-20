@@ -6,7 +6,8 @@ enum class GameCategory(val id: String, val titleResName: String) {
     ARCADE("arcade", "category_arcade"),
     LOGIC("logic", "category_logic"),
     CASUAL("casual", "category_casual"),
-    BOARD("board", "category_board");
+    BOARD("board", "category_board"),
+    STRATEGY("strategy", "category_strategy");
 
     companion object {
         fun fromId(id: String): GameCategory = entries.find { it.id.equals(id, ignoreCase = true) } ?: ALL

@@ -15,6 +15,30 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.aa.core.repository.AARepository
+import com.example.aa.presentation.AAViewModel
+import com.example.aa.presentation.ui.AAGameScreen
+import com.example.aa.presentation.ui.AAHomeScreen
+import com.example.minitd.core.repository.MiniTDRepository
+import com.example.minitd.presentation.MiniTDViewModel
+import com.example.minitd.presentation.ui.MiniTDGameScreen
+import com.example.minitd.presentation.ui.MiniTDHomeScreen
+import com.example.ropearound.core.repository.RopeAroundRepository
+import com.example.ropearound.presentation.RopeAroundViewModel
+import com.example.ropearound.presentation.ui.RopeAroundGameScreen
+import com.example.ropearound.presentation.ui.RopeAroundHomeScreen
+import com.example.roperescue.core.repository.RopeRescueRepository
+import com.example.roperescue.presentation.RopeRescueViewModel
+import com.example.roperescue.presentation.ui.RopeRescueGameScreen
+import com.example.roperescue.presentation.ui.RopeRescueHomeScreen
+import com.example.picpuzzle.core.repository.PicPuzzleRepository
+import com.example.picpuzzle.presentation.PicPuzzleViewModel
+import com.example.picpuzzle.presentation.ui.PicPuzzleGameScreen
+import com.example.picpuzzle.presentation.ui.PicPuzzleHomeScreen
+import com.example.pullthepin.core.repository.PullThePinRepository
+import com.example.pullthepin.presentation.PullThePinViewModel
+import com.example.pullthepin.presentation.ui.PullThePinGameScreen
+import com.example.pullthepin.presentation.ui.PullThePinHomeScreen
 import com.example.colorsequence.core.repository.ColorSequenceRepository
 import com.example.colorsequence.presentation.ColorSequenceViewModel
 import com.example.colorsequence.presentation.ui.ColorSequenceGameScreen
@@ -84,6 +108,12 @@ class MainActivity : ComponentActivity() {
         val stopTheTimeRepository = StopTheTimeRepository(database, this)
         val colorSwitchRepository = ColorSwitchRepository(database, this)
         val knifeHitRepository = KnifeHitRepository(database, this)
+        val aaRepository = AARepository(database, this)
+        val miniTDRepository = MiniTDRepository(database, this)
+        val ropeAroundRepository = RopeAroundRepository(database, this)
+        val ropeRescueRepository = RopeRescueRepository(database, this)
+        val picPuzzleRepository = PicPuzzleRepository(database, this)
+        val pullThePinRepository = PullThePinRepository(database, this)
         val soundManager = SoundManager(this)
         val hapticManager = HapticManager(this)
         val hubPreferences = HubPreferences.getInstance(this)
@@ -101,6 +131,12 @@ class MainActivity : ComponentActivity() {
                         stopTheTimeRepository = stopTheTimeRepository,
                         colorSwitchRepository = colorSwitchRepository,
                         knifeHitRepository = knifeHitRepository,
+                        aaRepository = aaRepository,
+                        miniTDRepository = miniTDRepository,
+                        ropeAroundRepository = ropeAroundRepository,
+                        ropeRescueRepository = ropeRescueRepository,
+                        picPuzzleRepository = picPuzzleRepository,
+                        pullThePinRepository = pullThePinRepository,
                         soundManager = soundManager,
                         hapticManager = hapticManager,
                         gameViewModel = gameViewModel,
@@ -123,6 +159,12 @@ fun GameHubApp(
     stopTheTimeRepository: StopTheTimeRepository,
     colorSwitchRepository: ColorSwitchRepository,
     knifeHitRepository: KnifeHitRepository,
+    aaRepository: AARepository,
+    miniTDRepository: MiniTDRepository,
+    ropeAroundRepository: RopeAroundRepository,
+    ropeRescueRepository: RopeRescueRepository,
+    picPuzzleRepository: PicPuzzleRepository,
+    pullThePinRepository: PullThePinRepository,
     soundManager: SoundManager,
     hapticManager: HapticManager,
     gameViewModel: GameViewModel,
@@ -154,6 +196,24 @@ fun GameHubApp(
     )
     val knifeHitViewModel: KnifeHitViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
         factory = KnifeHitViewModel.Factory(knifeHitRepository, soundManager, hapticManager)
+    )
+    val aaViewModel: AAViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+        factory = AAViewModel.Factory(aaRepository, soundManager, hapticManager)
+    )
+    val miniTDViewModel: MiniTDViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+        factory = MiniTDViewModel.Factory(miniTDRepository, soundManager, hapticManager)
+    )
+    val ropeAroundViewModel: RopeAroundViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+        factory = RopeAroundViewModel.Factory(ropeAroundRepository, soundManager, hapticManager)
+    )
+    val ropeRescueViewModel: RopeRescueViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+        factory = RopeRescueViewModel.Factory(ropeRescueRepository, soundManager, hapticManager)
+    )
+    val picPuzzleViewModel: PicPuzzleViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+        factory = PicPuzzleViewModel.Factory(picPuzzleRepository, soundManager, hapticManager)
+    )
+    val pullThePinViewModel: PullThePinViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+        factory = PullThePinViewModel.Factory(pullThePinRepository, soundManager, hapticManager)
     )
 
     NavHost(
@@ -196,6 +256,24 @@ fun GameHubApp(
                         GameRegistry.KNIFE_HIT_ID -> {
                             navController.navigate("knifehit_home")
                         }
+                        GameRegistry.AA_ID -> {
+                            navController.navigate("aa_home")
+                        }
+                        GameRegistry.MINI_TD_ID -> {
+                            navController.navigate("minitd_home")
+                        }
+                        GameRegistry.ROPE_AROUND_ID -> {
+                            navController.navigate("ropearound_home")
+                        }
+                        GameRegistry.ROPE_RESCUE_ID -> {
+                            navController.navigate("roperescue_home")
+                        }
+                        GameRegistry.PIC_PUZZLE_ID -> {
+                            navController.navigate("picpuzzle_home")
+                        }
+                        GameRegistry.PULL_THE_PIN_ID -> {
+                            navController.navigate("pullthepin_home")
+                        }
                         else -> {
                             navController.navigate("game_details/$gameId")
                         }
@@ -229,6 +307,12 @@ fun GameHubApp(
                         GameRegistry.STOP_THE_TIME_ID -> navController.navigate("stoptime_home")
                         GameRegistry.COLOR_SWITCH_ID -> navController.navigate("colorswitch_home")
                         GameRegistry.KNIFE_HIT_ID -> navController.navigate("knifehit_home")
+                        GameRegistry.AA_ID -> navController.navigate("aa_home")
+                        GameRegistry.MINI_TD_ID -> navController.navigate("minitd_home")
+                        GameRegistry.ROPE_AROUND_ID -> navController.navigate("ropearound_home")
+                        GameRegistry.ROPE_RESCUE_ID -> navController.navigate("roperescue_home")
+                        GameRegistry.PIC_PUZZLE_ID -> navController.navigate("picpuzzle_home")
+                        GameRegistry.PULL_THE_PIN_ID -> navController.navigate("pullthepin_home")
                     }
                 }
             )
@@ -539,6 +623,144 @@ fun GameHubApp(
         composable("knifehit_game") {
             KnifeHitGameScreen(
                 viewModel = knifeHitViewModel,
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // --- AA SCREENS ---
+        composable("aa_home") {
+            AAHomeScreen(
+                viewModel = aaViewModel,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onStartLevel = { levelNum ->
+                    aaViewModel.startLevel(levelNum)
+                    navController.navigate("aa_game")
+                }
+            )
+        }
+
+        composable("aa_game") {
+            AAGameScreen(
+                viewModel = aaViewModel,
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // --- MINI TOWER DEFENSE SCREENS ---
+        composable("minitd_home") {
+            MiniTDHomeScreen(
+                viewModel = miniTDViewModel,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onStartLevel = { levelNum ->
+                    miniTDViewModel.startLevel(levelNum)
+                    navController.navigate("minitd_game")
+                }
+            )
+        }
+
+        composable("minitd_game") {
+            MiniTDGameScreen(
+                viewModel = miniTDViewModel,
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // --- ROPE AROUND SCREENS ---
+        composable("ropearound_home") {
+            RopeAroundHomeScreen(
+                viewModel = ropeAroundViewModel,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onStartLevel = { levelNum ->
+                    ropeAroundViewModel.startLevel(levelNum)
+                    navController.navigate("ropearound_game")
+                }
+            )
+        }
+
+        composable("ropearound_game") {
+            RopeAroundGameScreen(
+                viewModel = ropeAroundViewModel,
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // --- ROPE RESCUE SCREENS ---
+        composable("roperescue_home") {
+            RopeRescueHomeScreen(
+                viewModel = ropeRescueViewModel,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onStartLevel = { levelNum ->
+                    ropeRescueViewModel.startLevel(levelNum)
+                    navController.navigate("roperescue_game")
+                }
+            )
+        }
+
+        composable("roperescue_game") {
+            RopeRescueGameScreen(
+                viewModel = ropeRescueViewModel,
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // --- PIC PUZZLE SCREENS ---
+        composable("picpuzzle_home") {
+            PicPuzzleHomeScreen(
+                viewModel = picPuzzleViewModel,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onStartLevel = { levelNum ->
+                    picPuzzleViewModel.startLevel(levelNum)
+                    navController.navigate("picpuzzle_game")
+                }
+            )
+        }
+
+        composable("picpuzzle_game") {
+            PicPuzzleGameScreen(
+                viewModel = picPuzzleViewModel,
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // --- PULL THE PIN SCREENS ---
+        composable("pullthepin_home") {
+            PullThePinHomeScreen(
+                viewModel = pullThePinViewModel,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onStartLevel = { levelNum ->
+                    pullThePinViewModel.startLevel(levelNum)
+                    navController.navigate("pullthepin_game")
+                }
+            )
+        }
+
+        composable("pullthepin_game") {
+            PullThePinGameScreen(
+                viewModel = pullThePinViewModel,
                 onNavigateBack = {
                     navController.popBackStack()
                 }
