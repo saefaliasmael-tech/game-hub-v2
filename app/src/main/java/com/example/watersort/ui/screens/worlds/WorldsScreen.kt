@@ -63,6 +63,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.ads.ZubaLubaBannerAd
 import com.example.watersort.core.database.LevelProgressEntity
 import com.example.watersort.core.model.WorldConfig
 import com.example.watersort.core.model.WorldInfo
@@ -364,93 +365,107 @@ fun WorldsScreen(
             }
 
             // ================= 4. ORGANIC WINDING LEVEL PATH =================
-            if (!isWorldUnlocked) {
-                // World Locked State
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    TactileGameCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        surfaceColor = Color(0xFF1E1528),
-                        borderColor = Color(0xFFF59E0B),
-                        shadowColor = Color(0xFF0F0818)
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                if (!isWorldUnlocked) {
+                    // World Locked State
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                        TactileGameCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            surfaceColor = Color(0xFF1E1528),
+                            borderColor = Color(0xFFF59E0B),
+                            shadowColor = Color(0xFF0F0818)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Lock,
-                                contentDescription = "Locked",
-                                tint = Color(0xFFF59E0B),
-                                modifier = Modifier.size(54.dp)
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text(
-                                text = "World Expedition Locked",
-                                style = MaterialTheme.typography.titleLarge.copy(
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(24.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = "Locked",
+                                    tint = Color(0xFFF59E0B),
+                                    modifier = Modifier.size(54.dp)
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text(
+                                    text = "World Expedition Locked",
+                                    style = MaterialTheme.typography.titleLarge.copy(
+                                        fontWeight = FontWeight.Black,
+                                        color = Color.White
+                                    )
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = "Earn ${currentWorld.requiredStars} total stars across previous worlds to unlock!",
+                                    style = MaterialTheme.typography.bodyMedium.copy(color = Color(0xFF94A3B8)),
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text(
+                                    text = "Current Stars: $totalStars / ${currentWorld.requiredStars} ★",
+                                    color = Color(0xFFFDE047),
                                     fontWeight = FontWeight.Black,
-                                    color = Color.White
-                                )
-                            )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = "Earn ${currentWorld.requiredStars} total stars across previous worlds to unlock!",
-                                style = MaterialTheme.typography.bodyMedium.copy(color = Color(0xFF94A3B8)),
-                                textAlign = TextAlign.Center
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text(
-                                text = "Current Stars: $totalStars / ${currentWorld.requiredStars} ★",
-                                color = Color(0xFFFDE047),
-                                fontWeight = FontWeight.Black,
-                                fontSize = 14.sp
-                            )
-                        }
-                    }
-                }
-            } else {
-                LazyColumn(
-                    state = lazyListState,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    itemsIndexed(mapItems) { index, item ->
-                        when (item) {
-                            is WorldMapItem.LevelNodeItem -> {
-                                OrganicLevelNodeRow(
-                                    item = item,
-                                    worldColor = worldColor,
-                                    onSelectLevel = onSelectLevel
-                                )
-                            }
-                            is WorldMapItem.LandmarkItem -> {
-                                LandmarkCheckpointCard(
-                                    item = item,
-                                    worldColor = worldColor
-                                )
-                            }
-                            is WorldMapItem.SecretPortalItem -> {
-                                SecretPortalCard(
-                                    item = item,
-                                    totalStars = totalStars,
-                                    onSelectLevel = onSelectLevel
+                                    fontSize = 14.sp
                                 )
                             }
                         }
                     }
-                    item {
-                        Spacer(modifier = Modifier.height(32.dp))
+                } else {
+                    LazyColumn(
+                        state = lazyListState,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        itemsIndexed(mapItems) { index, item ->
+                            when (item) {
+                                is WorldMapItem.LevelNodeItem -> {
+                                    OrganicLevelNodeRow(
+                                        item = item,
+                                        worldColor = worldColor,
+                                        onSelectLevel = onSelectLevel
+                                    )
+                                }
+                                is WorldMapItem.LandmarkItem -> {
+                                    LandmarkCheckpointCard(
+                                        item = item,
+                                        worldColor = worldColor
+                                    )
+                                }
+                                is WorldMapItem.SecretPortalItem -> {
+                                    SecretPortalCard(
+                                        item = item,
+                                        totalStars = totalStars,
+                                        onSelectLevel = onSelectLevel
+                                    )
+                                }
+                            }
+                        }
+                        item {
+                            Spacer(modifier = Modifier.height(32.dp))
+                        }
                     }
                 }
             }
+
+            // Non-intrusive Banner Ad docked safely at the bottom of the level select screen
+            ZubaLubaBannerAd(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding(),
+                backgroundColor = Color.Transparent
+            )
         }
     }
 }

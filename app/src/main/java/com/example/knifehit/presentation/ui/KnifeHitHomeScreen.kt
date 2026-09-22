@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ads.ZubaLubaBannerAd
 import com.example.knifehit.core.level.KnifeHitLevelManager
 import com.example.knifehit.core.model.ALL_KNIFE_SKINS
 import com.example.knifehit.core.model.KnifeHitGameMode
@@ -193,22 +194,36 @@ fun KnifeHitHomeScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            when (selectedTab) {
-                0 -> KnifeHitCampaignGrid(
-                    progressMap = progressMap,
-                    onSelectLevel = onStartCampaignLevel
-                )
-                1 -> KnifeHitBossRushView(
-                    onStartBossRush = { onStartBossRush(1) }
-                )
-                2 -> KnifeHitShopView(
-                    apples = apples,
-                    equippedSkin = equippedSkin,
-                    unlockedSkins = unlockedSkins,
-                    onBuy = { viewModel.buySkin(it) },
-                    onEquip = { viewModel.equipSkin(it) }
-                )
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                when (selectedTab) {
+                    0 -> KnifeHitCampaignGrid(
+                        progressMap = progressMap,
+                        onSelectLevel = onStartCampaignLevel
+                    )
+                    1 -> KnifeHitBossRushView(
+                        onStartBossRush = { onStartBossRush(1) }
+                    )
+                    2 -> KnifeHitShopView(
+                        apples = apples,
+                        equippedSkin = equippedSkin,
+                        unlockedSkins = unlockedSkins,
+                        onBuy = { viewModel.buySkin(it) },
+                        onEquip = { viewModel.equipSkin(it) }
+                    )
+                }
             }
+
+            // Non-intrusive Banner Ad at the bottom of the screen
+            ZubaLubaBannerAd(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding(),
+                backgroundColor = Color.Transparent
+            )
         }
     }
 

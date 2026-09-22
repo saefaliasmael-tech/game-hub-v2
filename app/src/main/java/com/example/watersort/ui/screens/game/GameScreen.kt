@@ -63,7 +63,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import android.app.Activity
+import com.example.ads.AdManager
+import com.example.ads.ZubaLubaRewardedButton
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -92,6 +96,8 @@ fun GameScreen(
     onNavigateBack: () -> Unit,
     onNavigateNextLevel: (Int) -> Unit
 ) {
+    val context = LocalContext.current
+    val activity = context as? Activity
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val theme = remember(uiState.themeId) { ThemeConfig.getTheme(uiState.themeId) }
@@ -318,7 +324,12 @@ fun GameScreen(
                 text = { Text(stringResource(R.string.restart_confirm_desc), color = Color(0xFFCBD5E1)) },
                 confirmButton = {
                     Button(
-                        onClick = { viewModel.confirmRestart() },
+                        onClick = {
+                            viewModel.dismissRestart()
+                            AdManager.recordGameLoss("watersort", activity) {
+                                viewModel.confirmRestart()
+                            }
+                        },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE11D48))
                     ) {
                         Text(stringResource(R.string.yes))
@@ -340,7 +351,12 @@ fun GameScreen(
                 title = { Text(stringResource(R.string.stuck_title), color = Color(0xFFFBBF24)) },
                 text = { Text(stringResource(R.string.stuck_desc), color = Color(0xFFCBD5E1)) },
                 confirmButton = {
-                    Button(onClick = { viewModel.confirmRestart() }) {
+                    Button(onClick = {
+                        viewModel.dismissStuck()
+                        AdManager.recordGameLoss("watersort", activity) {
+                            viewModel.confirmRestart()
+                        }
+                    }) {
                         Text(stringResource(R.string.restart))
                     }
                 },
@@ -364,8 +380,19 @@ fun GameScreen(
                 coinsEarned = uiState.coinsEarnedOnWin,
                 isPerfectRun = uiState.isPerfectRun,
                 levelId = levelId,
-                onNextLevel = { onNavigateNextLevel(levelId + 1) },
-                onHome = onNavigateBack
+                onNextLevel = {
+                    AdManager.recordGameWin("watersort", activity) {
+                        onNavigateNextLevel(levelId + 1)
+                    }
+                },
+                onHome = {
+                    AdManager.recordGameWin("watersort", activity) {
+                        onNavigateBack()
+                    }
+                },
+                onRewardEarned = {
+                    viewModel.onAdRewardEarned(50)
+                }
             )
         }
 
@@ -383,7 +410,8 @@ private fun VictoryDialog(
     isPerfectRun: Boolean,
     levelId: Int,
     onNextLevel: () -> Unit,
-    onHome: () -> Unit
+    onHome: () -> Unit,
+    onRewardEarned: () -> Unit = {}
 ) {
     val star1Scale = remember { Animatable(0f) }
     val star2Scale = remember { Animatable(0f) }
@@ -511,7 +539,16 @@ private fun VictoryDialog(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Optional Rewarded Ad: Bonus Coins
+                ZubaLubaRewardedButton(
+                    rewardDescription = "+50 🪙",
+                    onRewardEarned = { _, _ -> onRewardEarned() },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
 
                 // Next Level Tactile Button
                 TactileGameButton(

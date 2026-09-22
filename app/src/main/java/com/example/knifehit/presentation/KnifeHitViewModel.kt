@@ -280,6 +280,10 @@ class KnifeHitViewModel(
     fun getBossesDefeated() = repository.getBossesDefeated()
     fun getHighestCombo() = repository.getHighestCombo()
 
+    fun addBonusApples(count: Int = 10) {
+        repository.addApples(count)
+    }
+
     override fun onCleared() {
         super.onCleared()
         gameLoopJob?.cancel()

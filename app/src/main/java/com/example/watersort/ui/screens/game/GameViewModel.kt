@@ -429,4 +429,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun canUndo(): Boolean = engine.canUndo()
+
+    fun onAdRewardEarned(rewardCoins: Int = 50) {
+        viewModelScope.launch {
+            repository.addCoins(rewardCoins, TransactionType.REWARD_DAILY, "Rewarded Ad")
+            soundManager.play(GameSound.COIN)
+            hapticManager.success()
+            _uiState.update { it.copy(userMessage = "+$rewardCoins Coins received!") }
+        }
+    }
 }

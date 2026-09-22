@@ -144,4 +144,8 @@
     <string name="invalid_move_color_mismatch">يجب أن تتطابق الألوان بالأعلى!</string>
     <string name="invalid_move_already_solved">هذه القارورة مكتملة بالفعل</string>
     <string name="invalid_move_general">حركة غير صالحة</string>
+    <string name="watch_ad">شاهد إعلان</string>
+    <string name="watch_ad_reward">شاهد إعلان (%s)</string>
+    <string name="reward_earned">تم الحصول على المكافأة!</string>
+    <string name="ad_loading">جاري تحميل الإعلان…</string>
 </resources>

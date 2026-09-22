@@ -144,4 +144,8 @@
     <string name="invalid_move_color_mismatch">Top colors must match!</string>
     <string name="invalid_move_already_solved">This bottle is already completed</string>
     <string name="invalid_move_general">Invalid move</string>
+    <string name="watch_ad">Watch Ad</string>
+    <string name="watch_ad_reward">Watch Ad (%s)</string>
+    <string name="reward_earned">Reward earned!</string>
+    <string name="ad_loading">Loading ad…</string>
 </resources>

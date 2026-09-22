@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.BuildConfig
 import com.example.R
+import com.example.ads.ZubaLubaBannerAd
 import com.example.hub.data.HubPreferences
 import com.example.hub.model.GameCategory
 import com.example.hub.model.GameInfo
@@ -202,16 +203,26 @@ fun HubHomeScreen(
             )
         },
         bottomBar = {
-            HubBottomNavigation(
-                currentTab = currentTab,
-                onTabSelected = { selected ->
-                    currentTab = selected
-                    if (selected == HubTab.HOME) {
-                        searchQuery = ""
-                        isSearchExpanded = false
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(HubColors.Void)
+            ) {
+                ZubaLubaBannerAd(
+                    modifier = Modifier.fillMaxWidth(),
+                    backgroundColor = HubColors.Void
+                )
+                HubBottomNavigation(
+                    currentTab = currentTab,
+                    onTabSelected = { selected ->
+                        currentTab = selected
+                        if (selected == HubTab.HOME) {
+                            searchQuery = ""
+                            isSearchExpanded = false
+                        }
                     }
-                }
-            )
+                )
+            }
         },
         containerColor = HubColors.Void,
         modifier = modifier.fillMaxSize()
