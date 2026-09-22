@@ -1,6 +1,5 @@
 package com.example.hub.ui.components
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -27,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.hub.model.GameInfo
+import com.example.hub.ui.theme.HubColors
 
 @Composable
 fun GameCard(
@@ -43,38 +43,37 @@ fun GameCard(
             .clip(RoundedCornerShape(20.dp))
             .border(
                 width = 1.dp,
-                color = if (game.isFeatured) game.accentColor.copy(alpha = 0.6f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+                color = if (game.isFeatured) HubColors.SoftViolet.copy(alpha = 0.5f) else HubColors.Hairline,
                 shape = RoundedCornerShape(20.dp)
             )
             .clickable { onGameClick() }
             .testTag("game_card_${game.id}"),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
+            containerColor = HubColors.SurfaceLow
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Header Row with Visual Badge & Favorite Icon
+            // Header Row: Game Avatar + Title/Category + Favorite Toggle
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Game Art Thumbnail / Decorative Icon
+                // Game Art Thumbnail with gradient and border
                 Box(
                     modifier = Modifier
-                        .size(52.dp)
-                        .clip(RoundedCornerShape(14.dp))
+                        .size(54.dp)
+                        .clip(RoundedCornerShape(16.dp))
                         .background(
                             Brush.linearGradient(
                                 listOf(game.primaryColor, game.secondaryColor)
                             )
                         )
-                        .border(1.dp, Color.White.copy(alpha = 0.25f), RoundedCornerShape(14.dp)),
+                        .border(1.dp, Color.White.copy(alpha = 0.25f), RoundedCornerShape(16.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -85,9 +84,9 @@ fun GameCard(
                     )
                 }
 
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(14.dp))
 
-                // Title, Category & Status Badges
+                // Title, Category & Badges
                 Column(modifier = Modifier.weight(1f)) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -95,9 +94,10 @@ fun GameCard(
                     ) {
                         Text(
                             text = game.name,
+                            color = HubColors.HighText,
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 17.sp
+                                fontSize = 16.sp
                             ),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
@@ -105,8 +105,8 @@ fun GameCard(
 
                         if (game.isFeatured) {
                             Badge(
-                                containerColor = Color(0xFFFFB703),
-                                contentColor = Color(0xFF03045E)
+                                containerColor = HubColors.Magenta,
+                                contentColor = Color.White
                             ) {
                                 Text(
                                     text = stringResource(R.string.badge_featured),
@@ -117,24 +117,12 @@ fun GameCard(
                             }
                         } else if (game.isNew) {
                             Badge(
-                                containerColor = Color(0xFF10B981),
-                                contentColor = Color.White
+                                containerColor = HubColors.Lime,
+                                contentColor = HubColors.Void
                             ) {
                                 Text(
                                     text = stringResource(R.string.badge_new),
                                     fontWeight = FontWeight.Black,
-                                    fontSize = 9.sp,
-                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-                                )
-                            }
-                        } else if (game.isComingSoon) {
-                            Badge(
-                                containerColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
-                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.badge_coming_soon),
-                                    fontWeight = FontWeight.Bold,
                                     fontSize = 9.sp,
                                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
                                 )
@@ -144,24 +132,44 @@ fun GameCard(
 
                     Spacer(modifier = Modifier.height(2.dp))
 
-                    Text(
-                        text = game.category.name,
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            color = game.accentColor,
-                            fontWeight = FontWeight.SemiBold
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = game.category.name,
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                color = HubColors.Cyan,
+                                fontWeight = FontWeight.SemiBold
+                            )
                         )
-                    )
+
+                        Text(
+                            text = "•",
+                            color = HubColors.LowText,
+                            fontSize = 12.sp
+                        )
+
+                        Text(
+                            text = game.difficultyEstimate,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = HubColors.LowText
+                            )
+                        )
+                    }
                 }
 
-                // Favorite Toggle Button
+                // Favorite Toggle Button (Accessible minimum 48x48)
                 IconButton(
                     onClick = onFavoriteToggle,
-                    modifier = Modifier.testTag("fav_btn_${game.id}")
+                    modifier = Modifier
+                        .size(48.dp)
+                        .testTag("fav_btn_${game.id}")
                 ) {
                     Icon(
                         imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                         contentDescription = "Favorite",
-                        tint = if (isFavorite) Color(0xFFE63946) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        tint = if (isFavorite) HubColors.Magenta else HubColors.LowText
                     )
                 }
             }
@@ -172,7 +180,7 @@ fun GameCard(
             Text(
                 text = game.description,
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = HubColors.LowText,
                     lineHeight = 20.sp
                 ),
                 maxLines = 2,
@@ -181,64 +189,69 @@ fun GameCard(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Action Row: Info Chips + Launch Button
+            // Action Row: Level Count Pill + Glowing Play Button
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
+                    shape = RoundedCornerShape(10.dp),
+                    color = HubColors.SurfaceMid,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, HubColors.Hairline)
                 ) {
                     Text(
-                        text = game.totalLevelsEstimate,
+                        text = "${game.totalLevelsEstimate} Levels",
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = HubColors.SoftViolet
                         ),
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                     )
                 }
 
                 if (game.isAvailable) {
-                    Button(
-                        onClick = onPlayClick,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = game.primaryColor,
-                            contentColor = Color.White
-                        ),
-                        shape = RoundedCornerShape(12.dp),
-                        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
-                        modifier = Modifier.testTag("play_btn_${game.id}")
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(HubColors.PlayButtonGradient)
+                            .clickable { onPlayClick() }
+                            .padding(horizontal = 22.dp, vertical = 9.dp)
+                            .defaultMinSize(minHeight = 44.dp)
+                            .testTag("play_btn_${game.id}"),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.PlayArrow,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = stringResource(R.string.play),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Filled.PlayArrow,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = stringResource(R.string.play),
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                                fontSize = 14.sp
+                            )
+                        }
                     }
                 } else {
                     OutlinedButton(
                         onClick = onGameClick,
-                        shape = RoundedCornerShape(12.dp),
-                        enabled = true,
+                        shape = RoundedCornerShape(14.dp),
                         colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            contentColor = HubColors.LowText
                         ),
-                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
+                        border = androidx.compose.foundation.BorderStroke(1.dp, HubColors.Hairline),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Lock,
                             contentDescription = null,
                             modifier = Modifier.size(14.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                            tint = HubColors.LowText
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(

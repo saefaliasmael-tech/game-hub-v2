@@ -1,6 +1,9 @@
 package com.example.hub.ui.screens
 
 import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,6 +15,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -20,7 +26,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.BuildConfig
 import com.example.R
+import com.example.hub.data.HubPreferences
 import com.example.hub.ui.components.UpdateDialog
+import com.example.hub.ui.theme.HubColors
 import com.example.update.UpdateChecker
 import com.example.update.UpdateDownloader
 import com.example.update.UpdateInstaller
@@ -35,6 +43,10 @@ fun HubSettingsScreen(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    val hubPreferences = remember { HubPreferences.getInstance(context) }
+
+    val soundEnabled by hubPreferences.soundEnabledFlow.collectAsState()
+    val vibrationEnabled by hubPreferences.vibrationEnabledFlow.collectAsState()
 
     val updateChecker = remember { UpdateChecker(context) }
     val updateDownloader = remember { UpdateDownloader(context) }
@@ -45,33 +57,44 @@ fun HubSettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = stringResource(R.string.hub_settings)) },
+                title = {
+                    Text(
+                        text = stringResource(R.string.hub_settings),
+                        color = HubColors.HighText,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
+                            tint = HubColors.HighText
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = HubColors.Void
+                )
             )
         },
+        containerColor = HubColors.Void,
         modifier = modifier.fillMaxSize()
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .background(HubColors.Void)
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // App Identity Card
             Card(
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                ),
+                shape = RoundedCornerShape(22.dp),
+                colors = CardDefaults.cardColors(containerColor = HubColors.SurfaceMid),
+                border = androidx.compose.foundation.BorderStroke(1.dp, HubColors.Hairline),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
@@ -80,16 +103,27 @@ fun HubSettingsScreen(
                         .padding(20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Icon(
-                        imageVector = Icons.Filled.SportsEsports,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(56.dp)
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(60.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(HubColors.HeroGradient),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.SportsEsports,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(36.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = stringResource(R.string.game_hub_title),
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black)
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Black,
+                            color = HubColors.HighText
+                        )
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
@@ -98,65 +132,149 @@ fun HubSettingsScreen(
                             BuildConfig.VERSION_NAME,
                             BuildConfig.VERSION_CODE
                         ),
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        style = MaterialTheme.typography.bodyMedium.copy(color = HubColors.LowText)
                     )
+                }
+            }
+
+            // Controls Section (Sound & Vibration)
+            Text(
+                text = stringResource(R.string.settings),
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = HubColors.HighText
+                )
+            )
+
+            Card(
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = HubColors.SurfaceLow),
+                border = androidx.compose.foundation.BorderStroke(1.dp, HubColors.Hairline),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    // Sound Toggle
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(imageVector = Icons.Filled.VolumeUp, contentDescription = null, tint = HubColors.SoftViolet)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(text = stringResource(R.string.sound_effects), color = HubColors.HighText)
+                        }
+                        Switch(
+                            checked = soundEnabled,
+                            onCheckedChange = { hubPreferences.setSoundEnabled(!soundEnabled) },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = HubColors.PrimaryViolet
+                            )
+                        )
+                    }
+
+                    HorizontalDivider(color = HubColors.Hairline)
+
+                    // Vibration Toggle
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(imageVector = Icons.Filled.Vibration, contentDescription = null, tint = HubColors.SoftViolet)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(text = stringResource(R.string.haptics), color = HubColors.HighText)
+                        }
+                        Switch(
+                            checked = vibrationEnabled,
+                            onCheckedChange = { hubPreferences.setVibrationEnabled(!vibrationEnabled) },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = HubColors.PrimaryViolet
+                            )
+                        )
+                    }
                 }
             }
 
             // Update Section
             Text(
                 text = stringResource(R.string.check_for_updates),
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = HubColors.HighText
+                )
             )
 
             Card(
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = HubColors.SurfaceLow),
+                border = androidx.compose.foundation.BorderStroke(1.dp, HubColors.Hairline),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         text = "OTA Full APK Update System",
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = HubColors.Cyan
+                        )
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "Game Hub checks for full application APK updates containing all games and engines without losing any of your saved levels or progress.",
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        text = "Game Hub checks for complete APK releases holding all games and engines without losing any of your saved levels or high scores.",
+                        style = MaterialTheme.typography.bodySmall.copy(color = HubColors.LowText)
                     )
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Button(
-                        onClick = {
-                            coroutineScope.launch {
-                                isCheckingUpdates = true
-                                val result = updateChecker.checkForUpdates()
-                                isCheckingUpdates = false
-                                if (result is UpdateState.UpToDate) {
-                                    Toast.makeText(context, context.getString(R.string.latest_version_message), Toast.LENGTH_SHORT).show()
-                                } else {
-                                    updateState = result
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(HubColors.PlayButtonGradient)
+                            .clickable(enabled = !isCheckingUpdates) {
+                                coroutineScope.launch {
+                                    isCheckingUpdates = true
+                                    val result = updateChecker.checkForUpdates()
+                                    isCheckingUpdates = false
+                                    if (result is UpdateState.UpToDate) {
+                                        Toast.makeText(
+                                            context,
+                                            context.getString(R.string.latest_version_message),
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else {
+                                        updateState = result
+                                    }
                                 }
                             }
-                        },
-                        enabled = !isCheckingUpdates,
-                        modifier = Modifier.fillMaxWidth().testTag("check_updates_btn")
+                            .padding(vertical = 12.dp)
+                            .testTag("check_updates_btn"),
+                        contentAlignment = Alignment.Center
                     ) {
                         if (isCheckingUpdates) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(20.dp),
-                                color = MaterialTheme.colorScheme.onPrimary,
+                                color = Color.White,
                                 strokeWidth = 2.dp
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(stringResource(R.string.checking_updates))
                         } else {
-                            Icon(imageVector = Icons.Filled.CloudSync, contentDescription = null)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(stringResource(R.string.check_for_updates))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Filled.CloudSync,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = stringResource(R.string.check_for_updates),
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
                     }
                 }
@@ -165,14 +283,16 @@ fun HubSettingsScreen(
             // About Hub Section
             Text(
                 text = stringResource(R.string.about_hub),
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = HubColors.HighText
+                )
             )
 
             Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
-                ),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = HubColors.SurfaceLow),
+                border = androidx.compose.foundation.BorderStroke(1.dp, HubColors.Hairline),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
@@ -184,13 +304,13 @@ fun HubSettingsScreen(
                         title = "Package ID",
                         subtitle = BuildConfig.APPLICATION_ID
                     )
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+                    HorizontalDivider(color = HubColors.Hairline)
                     SettingItem(
                         icon = Icons.Filled.Extension,
                         title = "Standalone Game Architecture",
                         subtitle = "Zero shared logic, isolated local databases"
                     )
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+                    HorizontalDivider(color = HubColors.Hairline)
                     SettingItem(
                         icon = Icons.Filled.CloudDownload,
                         title = "Distribution Model",
@@ -201,40 +321,40 @@ fun HubSettingsScreen(
         }
     }
 
-    // Update Dialog
-    UpdateDialog(
-        state = updateState,
-        onStartDownload = {
-            val manifest = (updateState as? UpdateState.UpdateAvailable)?.manifest
-            if (manifest != null) {
-                coroutineScope.launch {
-                    updateDownloader.downloadApk(manifest).collect { state ->
-                        updateState = state
+    val currentUpdate = updateState
+    if (currentUpdate !is UpdateState.Idle && currentUpdate !is UpdateState.UpToDate && currentUpdate !is UpdateState.Checking) {
+        UpdateDialog(
+            state = currentUpdate,
+            onStartDownload = {
+                val manifest = (currentUpdate as? UpdateState.UpdateAvailable)?.manifest
+                if (manifest != null) {
+                    coroutineScope.launch {
+                        updateDownloader.downloadApk(manifest).collect { st ->
+                            updateState = st
+                        }
                     }
                 }
+            },
+            onInstall = {
+                val readyState = currentUpdate as? UpdateState.ReadyToInstall
+                if (readyState != null) {
+                    updateInstaller.installApk(readyState.apkFile)
+                }
+            },
+            onDismiss = { updateState = UpdateState.Idle },
+            onRetry = {
+                coroutineScope.launch {
+                    val res = updateChecker.checkForUpdates()
+                    updateState = res
+                }
             }
-        },
-        onInstall = {
-            val readyState = updateState as? UpdateState.ReadyToInstall
-            if (readyState != null) {
-                updateInstaller.installApk(readyState.apkFile)
-            }
-        },
-        onDismiss = {
-            updateState = UpdateState.Idle
-        },
-        onRetry = {
-            coroutineScope.launch {
-                updateState = UpdateState.Checking
-                updateState = updateChecker.checkForUpdates()
-            }
-        }
-    )
+        )
+    }
 }
 
 @Composable
 private fun SettingItem(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     title: String,
     subtitle: String
 ) {
@@ -242,23 +362,32 @@ private fun SettingItem(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(24.dp)
-        )
+        Box(
+            modifier = Modifier
+                .size(38.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(HubColors.SurfaceMid),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = HubColors.Cyan,
+                modifier = Modifier.size(20.dp)
+            )
+        }
         Spacer(modifier = Modifier.width(14.dp))
         Column {
             Text(
                 text = title,
-                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    color = HubColors.HighText
+                )
             )
             Text(
                 text = subtitle,
-                style = MaterialTheme.typography.bodySmall.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                style = MaterialTheme.typography.bodySmall.copy(color = HubColors.LowText)
             )
         }
     }

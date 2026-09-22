@@ -2,6 +2,7 @@ package com.example.hub.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,6 +29,7 @@ import com.example.R
 import com.example.hub.data.HubPreferences
 import com.example.hub.model.GameInfo
 import com.example.hub.registry.GameRegistry
+import com.example.hub.ui.theme.HubColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,8 +45,13 @@ fun GameDetailsScreen(
     val isFavorite = favorites.contains(gameId)
 
     if (game == null) {
-        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Game not found", style = MaterialTheme.typography.titleMedium)
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .background(HubColors.Void),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Game not found", color = HubColors.HighText, style = MaterialTheme.typography.titleMedium)
         }
         return
     }
@@ -52,12 +59,19 @@ fun GameDetailsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = stringResource(R.string.game_details)) },
+                title = {
+                    Text(
+                        text = stringResource(R.string.game_details),
+                        color = HubColors.HighText,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
+                            tint = HubColors.HighText
                         )
                     }
                 },
@@ -69,42 +83,42 @@ fun GameDetailsScreen(
                         Icon(
                             imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                             contentDescription = "Favorite",
-                            tint = if (isFavorite) Color(0xFFE63946) else MaterialTheme.colorScheme.onSurface
+                            tint = if (isFavorite) HubColors.Magenta else HubColors.HighText
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = HubColors.Void
+                )
             )
         },
         bottomBar = {
-            Surface(
-                tonalElevation = 8.dp,
-                shadowElevation = 12.dp,
-                modifier = Modifier.fillMaxWidth()
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(HubColors.Void)
+                    .navigationBarsPadding()
+                    .padding(16.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    if (game.isAvailable) {
-                        Button(
-                            onClick = {
+                if (game.isAvailable) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(54.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(HubColors.PlayButtonGradient)
+                            .clickable {
                                 hubPreferences.recordGamePlayed(game.id)
                                 onLaunchGame(game.id)
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = game.primaryColor,
-                                contentColor = Color.White
-                            ),
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(56.dp)
-                                .testTag("details_play_btn")
-                        ) {
+                            }
+                            .testTag("details_play_btn"),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Filled.PlayArrow,
                                 contentDescription = null,
+                                tint = Color.White,
                                 modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
@@ -112,36 +126,41 @@ fun GameDetailsScreen(
                                 text = stringResource(R.string.play),
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 18.sp
+                                    fontSize = 18.sp,
+                                    color = Color.White
                                 )
                             )
                         }
-                    } else {
-                        OutlinedButton(
-                            onClick = {},
-                            enabled = false,
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(56.dp)
-                        ) {
-                            Icon(imageVector = Icons.Filled.Lock, contentDescription = null)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = stringResource(R.string.badge_coming_soon),
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                            )
-                        }
+                    }
+                } else {
+                    OutlinedButton(
+                        onClick = {},
+                        enabled = false,
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(54.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = HubColors.LowText),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, HubColors.Hairline)
+                    ) {
+                        Icon(imageVector = Icons.Filled.Lock, contentDescription = null, tint = HubColors.LowText)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(R.string.badge_coming_soon),
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        )
                     }
                 }
             }
         },
+        containerColor = HubColors.Void,
         modifier = modifier.fillMaxSize()
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .background(HubColors.Void)
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
@@ -181,7 +200,7 @@ fun GameDetailsScreen(
                     Text(
                         text = game.category.name,
                         style = MaterialTheme.typography.labelMedium.copy(
-                            color = game.accentColor,
+                            color = HubColors.Cyan,
                             fontWeight = FontWeight.Bold
                         )
                     )
@@ -198,14 +217,17 @@ fun GameDetailsScreen(
             ) {
                 Text(
                     text = game.name,
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = HubColors.HighText
+                    ),
                     modifier = Modifier.weight(1f)
                 )
 
                 if (game.isComingSoon) {
                     Badge(
-                        containerColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                        contentColor = MaterialTheme.colorScheme.onSurface
+                        containerColor = HubColors.SurfaceMid,
+                        contentColor = HubColors.LowText
                     ) {
                         Text(
                             text = stringResource(R.string.badge_coming_soon),
@@ -216,7 +238,7 @@ fun GameDetailsScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             // Info Stat Pills
             Row(
@@ -240,70 +262,63 @@ fun GameDetailsScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Long Description
+            // Description Section
             Text(
-                text = stringResource(R.string.information),
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = game.longDescription,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    lineHeight = 22.sp
+                text = "About the Game",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = HubColors.HighText
                 )
             )
-
-            if (game.isComingSoon) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                    ),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Info,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            text = stringResource(R.string.coming_soon_desc),
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Metadata card
+            Spacer(modifier = Modifier.height(8.dp))
             Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
-                ),
                 shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = HubColors.SurfaceLow),
+                border = androidx.compose.foundation.BorderStroke(1.dp, HubColors.Hairline),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    DetailRow(title = stringResource(R.string.developer), value = stringResource(R.string.game_hub_team))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
-                    DetailRow(title = stringResource(R.string.game_version), value = "v${game.version}")
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
-                    DetailRow(title = "Game Engine ID", value = game.id)
+                Text(
+                    text = game.longDescription,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        lineHeight = 22.sp,
+                        color = HubColors.LowText
+                    ),
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Developer / Platform Specs
+            Text(
+                text = stringResource(R.string.information),
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = HubColors.HighText
+                )
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = HubColors.SurfaceLow),
+                border = androidx.compose.foundation.BorderStroke(1.dp, HubColors.Hairline),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    SpecRow(label = stringResource(R.string.developer), value = stringResource(R.string.game_hub_team))
+                    HorizontalDivider(color = HubColors.Hairline)
+                    SpecRow(label = stringResource(R.string.game_version), value = game.version)
+                    HorizontalDivider(color = HubColors.Hairline)
+                    SpecRow(label = "Architecture", value = "Isolated Clean Module")
                 }
             }
+
+            Spacer(modifier = Modifier.height(30.dp))
         }
     }
 }
@@ -315,29 +330,27 @@ private fun InfoPill(
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier,
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
-        )
+        colors = CardDefaults.cardColors(containerColor = HubColors.SurfaceMid),
+        border = androidx.compose.foundation.BorderStroke(1.dp, HubColors.Hairline),
+        modifier = modifier
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 10.dp, horizontal = 8.dp),
+                .padding(vertical = 12.dp, horizontal = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.labelSmall.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                style = MaterialTheme.typography.labelSmall.copy(color = HubColors.LowText)
             )
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = value,
-                style = MaterialTheme.typography.labelMedium.copy(
-                    fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = HubColors.HighText
                 ),
                 maxLines = 1
             )
@@ -346,22 +359,24 @@ private fun InfoPill(
 }
 
 @Composable
-private fun DetailRow(title: String, value: String) {
+private fun SpecRow(
+    label: String,
+    value: String
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = title,
-            style = MaterialTheme.typography.bodySmall.copy(
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            text = label,
+            style = MaterialTheme.typography.bodyMedium.copy(color = HubColors.LowText)
         )
         Text(
             text = value,
-            style = MaterialTheme.typography.bodySmall.copy(
-                fontWeight = FontWeight.SemiBold
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontWeight = FontWeight.SemiBold,
+                color = HubColors.HighText
             )
         )
     }

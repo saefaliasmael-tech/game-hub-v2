@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * Dedicated Hub preferences for storing Hub-level favorites, recently played history,
- * and general platform configurations.
+ * sound, vibration, language, and general platform configurations.
  * Completely separate from any game's internal Room database or save state.
  */
 class HubPreferences(context: Context) {
@@ -20,6 +20,15 @@ class HubPreferences(context: Context) {
 
     private val _recentlyPlayedFlow = MutableStateFlow<List<String>>(emptyList())
     val recentlyPlayedFlow: StateFlow<List<String>> = _recentlyPlayedFlow.asStateFlow()
+
+    private val _soundEnabledFlow = MutableStateFlow(true)
+    val soundEnabledFlow: StateFlow<Boolean> = _soundEnabledFlow.asStateFlow()
+
+    private val _vibrationEnabledFlow = MutableStateFlow(true)
+    val vibrationEnabledFlow: StateFlow<Boolean> = _vibrationEnabledFlow.asStateFlow()
+
+    private val _languageFlow = MutableStateFlow("en")
+    val languageFlow: StateFlow<String> = _languageFlow.asStateFlow()
 
     init {
         loadData()
@@ -36,6 +45,10 @@ class HubPreferences(context: Context) {
             recentRaw.split(",").filter { it.isNotBlank() }
         }
         _recentlyPlayedFlow.value = recents
+
+        _soundEnabledFlow.value = prefs.getBoolean(KEY_SOUND_ENABLED, true)
+        _vibrationEnabledFlow.value = prefs.getBoolean(KEY_VIBRATION_ENABLED, true)
+        _languageFlow.value = prefs.getString(KEY_LANGUAGE, "en") ?: "en"
     }
 
     fun isFavorite(gameId: String): Boolean {
@@ -66,10 +79,28 @@ class HubPreferences(context: Context) {
         return _recentlyPlayedFlow.value.firstOrNull()
     }
 
+    fun setSoundEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_SOUND_ENABLED, enabled).apply()
+        _soundEnabledFlow.value = enabled
+    }
+
+    fun setVibrationEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_VIBRATION_ENABLED, enabled).apply()
+        _vibrationEnabledFlow.value = enabled
+    }
+
+    fun setLanguage(lang: String) {
+        prefs.edit().putString(KEY_LANGUAGE, lang).apply()
+        _languageFlow.value = lang
+    }
+
     companion object {
         private const val PREFS_NAME = "game_hub_platform_prefs"
         private const val KEY_FAVORITES = "hub_favorites_set"
         private const val KEY_RECENTLY_PLAYED = "hub_recent_games_list"
+        private const val KEY_SOUND_ENABLED = "hub_sound_enabled"
+        private const val KEY_VIBRATION_ENABLED = "hub_vibration_enabled"
+        private const val KEY_LANGUAGE = "hub_selected_language"
 
         @Volatile
         private var INSTANCE: HubPreferences? = null
