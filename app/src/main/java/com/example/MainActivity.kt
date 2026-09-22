@@ -39,6 +39,22 @@ import com.example.pullthepin.core.repository.PullThePinRepository
 import com.example.pullthepin.presentation.PullThePinViewModel
 import com.example.pullthepin.presentation.ui.PullThePinGameScreen
 import com.example.pullthepin.presentation.ui.PullThePinHomeScreen
+import com.example.happyglass.core.repository.HappyGlassRepository
+import com.example.happyglass.presentation.HappyGlassViewModel
+import com.example.happyglass.presentation.ui.HappyGlassGameScreen
+import com.example.happyglass.presentation.ui.HappyGlassHomeScreen
+import com.example.mrbullet.core.repository.MrBulletRepository
+import com.example.mrbullet.presentation.MrBulletViewModel
+import com.example.mrbullet.presentation.ui.MrBulletGameScreen
+import com.example.mrbullet.presentation.ui.MrBulletHomeScreen
+import com.example.protectsheep.core.repository.ProtectSheepRepository
+import com.example.protectsheep.presentation.ProtectSheepViewModel
+import com.example.protectsheep.presentation.ui.ProtectSheepGameScreen
+import com.example.protectsheep.presentation.ui.ProtectSheepHomeScreen
+import com.example.funfrenzy.core.repository.FunFrenzyRepository
+import com.example.funfrenzy.presentation.FunFrenzyViewModel
+import com.example.funfrenzy.presentation.ui.FunFrenzyGameScreen
+import com.example.funfrenzy.presentation.ui.FunFrenzyHomeScreen
 import com.example.colorsequence.core.repository.ColorSequenceRepository
 import com.example.colorsequence.presentation.ColorSequenceViewModel
 import com.example.colorsequence.presentation.ui.ColorSequenceGameScreen
@@ -114,6 +130,10 @@ class MainActivity : ComponentActivity() {
         val ropeRescueRepository = RopeRescueRepository(database, this)
         val picPuzzleRepository = PicPuzzleRepository(database, this)
         val pullThePinRepository = PullThePinRepository(database, this)
+        val happyGlassRepository = HappyGlassRepository(database, this)
+        val mrBulletRepository = MrBulletRepository(database, this)
+        val protectSheepRepository = ProtectSheepRepository(database, this)
+        val funFrenzyRepository = FunFrenzyRepository(database, this)
         val soundManager = SoundManager(this)
         val hapticManager = HapticManager(this)
         val hubPreferences = HubPreferences.getInstance(this)
@@ -137,15 +157,61 @@ class MainActivity : ComponentActivity() {
                         ropeRescueRepository = ropeRescueRepository,
                         picPuzzleRepository = picPuzzleRepository,
                         pullThePinRepository = pullThePinRepository,
+                        happyGlassRepository = happyGlassRepository,
+                        mrBulletRepository = mrBulletRepository,
+                        protectSheepRepository = protectSheepRepository,
+                        funFrenzyRepository = funFrenzyRepository,
                         soundManager = soundManager,
                         hapticManager = hapticManager,
-                        gameViewModel = gameViewModel,
+                        gameViewModelProvider = { gameViewModel },
                         hubPreferences = hubPreferences
                     )
                 }
             }
         }
     }
+}
+
+class GameViewModelHolder(
+    private val colorSequenceRepository: ColorSequenceRepository,
+    private val game2048Repository: Game2048Repository,
+    private val mastermindRepository: MastermindRepository,
+    private val unblockRepository: UnblockRepository,
+    private val memoryRepository: MemoryRepository,
+    private val stopTheTimeRepository: StopTheTimeRepository,
+    private val colorSwitchRepository: ColorSwitchRepository,
+    private val knifeHitRepository: KnifeHitRepository,
+    private val aaRepository: AARepository,
+    private val miniTDRepository: MiniTDRepository,
+    private val ropeAroundRepository: RopeAroundRepository,
+    private val ropeRescueRepository: RopeRescueRepository,
+    private val picPuzzleRepository: PicPuzzleRepository,
+    private val pullThePinRepository: PullThePinRepository,
+    private val happyGlassRepository: HappyGlassRepository,
+    private val mrBulletRepository: MrBulletRepository,
+    private val protectSheepRepository: ProtectSheepRepository,
+    private val funFrenzyRepository: FunFrenzyRepository,
+    private val soundManager: SoundManager,
+    private val hapticManager: HapticManager
+) {
+    val colorSequenceViewModel by lazy { ColorSequenceViewModel(colorSequenceRepository) }
+    val game2048ViewModel by lazy { Game2048ViewModel(game2048Repository) }
+    val mastermindViewModel by lazy { MastermindViewModel(mastermindRepository, soundManager, hapticManager) }
+    val unblockViewModel by lazy { UnblockViewModel(unblockRepository, soundManager, hapticManager) }
+    val memoryViewModel by lazy { MemoryViewModel(memoryRepository, soundManager, hapticManager) }
+    val stopTheTimeViewModel by lazy { StopTheTimeViewModel(stopTheTimeRepository, soundManager, hapticManager) }
+    val colorSwitchViewModel by lazy { ColorSwitchViewModel(colorSwitchRepository, soundManager, hapticManager) }
+    val knifeHitViewModel by lazy { KnifeHitViewModel(knifeHitRepository, soundManager, hapticManager) }
+    val aaViewModel by lazy { AAViewModel(aaRepository, soundManager, hapticManager) }
+    val miniTDViewModel by lazy { MiniTDViewModel(miniTDRepository, soundManager, hapticManager) }
+    val ropeAroundViewModel by lazy { RopeAroundViewModel(ropeAroundRepository, soundManager, hapticManager) }
+    val ropeRescueViewModel by lazy { RopeRescueViewModel(ropeRescueRepository, soundManager, hapticManager) }
+    val picPuzzleViewModel by lazy { PicPuzzleViewModel(picPuzzleRepository, soundManager, hapticManager) }
+    val pullThePinViewModel by lazy { PullThePinViewModel(pullThePinRepository, soundManager, hapticManager) }
+    val happyGlassViewModel by lazy { HappyGlassViewModel(happyGlassRepository, soundManager, hapticManager) }
+    val mrBulletViewModel by lazy { MrBulletViewModel(mrBulletRepository, soundManager, hapticManager) }
+    val protectSheepViewModel by lazy { ProtectSheepViewModel(protectSheepRepository, soundManager, hapticManager) }
+    val funFrenzyViewModel by lazy { FunFrenzyViewModel(funFrenzyRepository, soundManager, hapticManager) }
 }
 
 @Composable
@@ -165,56 +231,51 @@ fun GameHubApp(
     ropeRescueRepository: RopeRescueRepository,
     picPuzzleRepository: PicPuzzleRepository,
     pullThePinRepository: PullThePinRepository,
+    happyGlassRepository: HappyGlassRepository,
+    mrBulletRepository: MrBulletRepository,
+    protectSheepRepository: ProtectSheepRepository,
+    funFrenzyRepository: FunFrenzyRepository,
     soundManager: SoundManager,
     hapticManager: HapticManager,
-    gameViewModel: GameViewModel,
+    gameViewModelProvider: () -> GameViewModel,
     hubPreferences: HubPreferences
 ) {
     val navController = rememberNavController()
 
-    // Scoped ViewModels for all games
-    val colorSequenceViewModel: ColorSequenceViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
-        factory = ColorSequenceViewModel.Factory(colorSequenceRepository)
-    )
-    val game2048ViewModel: Game2048ViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
-        factory = Game2048ViewModel.Factory(game2048Repository)
-    )
-    val mastermindViewModel: MastermindViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
-        factory = MastermindViewModel.Factory(mastermindRepository, soundManager, hapticManager)
-    )
-    val unblockViewModel: UnblockViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
-        factory = UnblockViewModel.Factory(unblockRepository, soundManager, hapticManager)
-    )
-    val memoryViewModel: MemoryViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
-        factory = MemoryViewModel.Factory(memoryRepository, soundManager, hapticManager)
-    )
-    val stopTheTimeViewModel: StopTheTimeViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
-        factory = StopTheTimeViewModel.Factory(stopTheTimeRepository, soundManager, hapticManager)
-    )
-    val colorSwitchViewModel: ColorSwitchViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
-        factory = ColorSwitchViewModel.Factory(colorSwitchRepository, soundManager, hapticManager)
-    )
-    val knifeHitViewModel: KnifeHitViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
-        factory = KnifeHitViewModel.Factory(knifeHitRepository, soundManager, hapticManager)
-    )
-    val aaViewModel: AAViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
-        factory = AAViewModel.Factory(aaRepository, soundManager, hapticManager)
-    )
-    val miniTDViewModel: MiniTDViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
-        factory = MiniTDViewModel.Factory(miniTDRepository, soundManager, hapticManager)
-    )
-    val ropeAroundViewModel: RopeAroundViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
-        factory = RopeAroundViewModel.Factory(ropeAroundRepository, soundManager, hapticManager)
-    )
-    val ropeRescueViewModel: RopeRescueViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
-        factory = RopeRescueViewModel.Factory(ropeRescueRepository, soundManager, hapticManager)
-    )
-    val picPuzzleViewModel: PicPuzzleViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
-        factory = PicPuzzleViewModel.Factory(picPuzzleRepository, soundManager, hapticManager)
-    )
-    val pullThePinViewModel: PullThePinViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
-        factory = PullThePinViewModel.Factory(pullThePinRepository, soundManager, hapticManager)
-    )
+    // Lazy ViewModels holder - ensures no heavy game loops or database operations run at startup
+    val viewModelHolder = remember {
+        GameViewModelHolder(
+            colorSequenceRepository = colorSequenceRepository,
+            game2048Repository = game2048Repository,
+            mastermindRepository = mastermindRepository,
+            unblockRepository = unblockRepository,
+            memoryRepository = memoryRepository,
+            stopTheTimeRepository = stopTheTimeRepository,
+            colorSwitchRepository = colorSwitchRepository,
+            knifeHitRepository = knifeHitRepository,
+            aaRepository = aaRepository,
+            miniTDRepository = miniTDRepository,
+            ropeAroundRepository = ropeAroundRepository,
+            ropeRescueRepository = ropeRescueRepository,
+            picPuzzleRepository = picPuzzleRepository,
+            pullThePinRepository = pullThePinRepository,
+            happyGlassRepository = happyGlassRepository,
+            mrBulletRepository = mrBulletRepository,
+            protectSheepRepository = protectSheepRepository,
+            funFrenzyRepository = funFrenzyRepository,
+            soundManager = soundManager,
+            hapticManager = hapticManager
+        )
+    }
+
+    val launchGame: (String) -> Unit = { gameId ->
+        val game = GameRegistry.getGameById(gameId)
+        if (game != null && game.isAvailable) {
+            navController.navigate(game.entryRoute)
+        } else {
+            navController.navigate("game_details/$gameId")
+        }
+    }
 
     NavHost(
         navController = navController,
@@ -227,58 +288,7 @@ fun GameHubApp(
                 onNavigateToGameDetails = { gameId ->
                     navController.navigate("game_details/$gameId")
                 },
-                onLaunchGame = { gameId ->
-                    when (gameId) {
-                        GameRegistry.WATER_SORT_ID -> {
-                            navController.navigate("watersort_home")
-                        }
-                        GameRegistry.COLOR_SEQUENCE_ID -> {
-                            navController.navigate("colorsequence_home")
-                        }
-                        GameRegistry.PUZZLE_2048_ID -> {
-                            navController.navigate("game2048_home")
-                        }
-                        GameRegistry.MASTERMIND_ID -> {
-                            navController.navigate("mastermind_home")
-                        }
-                        GameRegistry.UNBLOCK_ME_ID -> {
-                            navController.navigate("unblock_home")
-                        }
-                        GameRegistry.MEMORY_CARDS_ID -> {
-                            navController.navigate("memory_home")
-                        }
-                        GameRegistry.STOP_THE_TIME_ID -> {
-                            navController.navigate("stoptime_home")
-                        }
-                        GameRegistry.COLOR_SWITCH_ID -> {
-                            navController.navigate("colorswitch_home")
-                        }
-                        GameRegistry.KNIFE_HIT_ID -> {
-                            navController.navigate("knifehit_home")
-                        }
-                        GameRegistry.AA_ID -> {
-                            navController.navigate("aa_home")
-                        }
-                        GameRegistry.MINI_TD_ID -> {
-                            navController.navigate("minitd_home")
-                        }
-                        GameRegistry.ROPE_AROUND_ID -> {
-                            navController.navigate("ropearound_home")
-                        }
-                        GameRegistry.ROPE_RESCUE_ID -> {
-                            navController.navigate("roperescue_home")
-                        }
-                        GameRegistry.PIC_PUZZLE_ID -> {
-                            navController.navigate("picpuzzle_home")
-                        }
-                        GameRegistry.PULL_THE_PIN_ID -> {
-                            navController.navigate("pullthepin_home")
-                        }
-                        else -> {
-                            navController.navigate("game_details/$gameId")
-                        }
-                    }
-                },
+                onLaunchGame = launchGame,
                 onNavigateToSettings = {
                     navController.navigate("hub_settings")
                 }
@@ -296,25 +306,7 @@ fun GameHubApp(
                 onNavigateBack = {
                     navController.popBackStack()
                 },
-                onLaunchGame = { targetGameId ->
-                    when (targetGameId) {
-                        GameRegistry.WATER_SORT_ID -> navController.navigate("watersort_home")
-                        GameRegistry.COLOR_SEQUENCE_ID -> navController.navigate("colorsequence_home")
-                        GameRegistry.PUZZLE_2048_ID -> navController.navigate("game2048_home")
-                        GameRegistry.MASTERMIND_ID -> navController.navigate("mastermind_home")
-                        GameRegistry.UNBLOCK_ME_ID -> navController.navigate("unblock_home")
-                        GameRegistry.MEMORY_CARDS_ID -> navController.navigate("memory_home")
-                        GameRegistry.STOP_THE_TIME_ID -> navController.navigate("stoptime_home")
-                        GameRegistry.COLOR_SWITCH_ID -> navController.navigate("colorswitch_home")
-                        GameRegistry.KNIFE_HIT_ID -> navController.navigate("knifehit_home")
-                        GameRegistry.AA_ID -> navController.navigate("aa_home")
-                        GameRegistry.MINI_TD_ID -> navController.navigate("minitd_home")
-                        GameRegistry.ROPE_AROUND_ID -> navController.navigate("ropearound_home")
-                        GameRegistry.ROPE_RESCUE_ID -> navController.navigate("roperescue_home")
-                        GameRegistry.PIC_PUZZLE_ID -> navController.navigate("picpuzzle_home")
-                        GameRegistry.PULL_THE_PIN_ID -> navController.navigate("pullthepin_home")
-                    }
-                }
+                onLaunchGame = launchGame
             )
         }
 
@@ -328,21 +320,22 @@ fun GameHubApp(
 
         // --- MASTERMIND GAME SCREENS ---
         composable("mastermind_home") {
+            val vm = viewModelHolder.mastermindViewModel
             MastermindHomeScreen(
-                viewModel = mastermindViewModel,
+                viewModel = vm,
                 onNavigateBack = {
                     navController.popBackStack()
                 },
                 onStartCampaignLevel = { levelNum ->
-                    mastermindViewModel.startCampaignLevel(levelNum)
+                    vm.startCampaignLevel(levelNum)
                     navController.navigate("mastermind_game")
                 },
                 onStartQuickPlay = { difficulty ->
-                    mastermindViewModel.startQuickPlay(difficulty)
+                    vm.startQuickPlay(difficulty)
                     navController.navigate("mastermind_game")
                 },
                 onStartDailyChallenge = {
-                    mastermindViewModel.startDailyChallenge()
+                    vm.startDailyChallenge()
                     navController.navigate("mastermind_game")
                 }
             )
@@ -350,7 +343,7 @@ fun GameHubApp(
 
         composable("mastermind_game") {
             MastermindGameScreen(
-                viewModel = mastermindViewModel,
+                viewModel = viewModelHolder.mastermindViewModel,
                 onNavigateBack = {
                     navController.popBackStack()
                 }
@@ -359,13 +352,14 @@ fun GameHubApp(
 
         // --- UNBLOCK ME GAME SCREENS ---
         composable("unblock_home") {
+            val vm = viewModelHolder.unblockViewModel
             UnblockHomeScreen(
-                viewModel = unblockViewModel,
+                viewModel = vm,
                 onNavigateBack = {
                     navController.popBackStack()
                 },
                 onStartLevel = { levelNum ->
-                    unblockViewModel.startLevel(levelNum)
+                    vm.startLevel(levelNum)
                     navController.navigate("unblock_game/$levelNum")
                 }
             )
@@ -376,7 +370,7 @@ fun GameHubApp(
             arguments = listOf(navArgument("levelNum") { type = NavType.IntType })
         ) {
             UnblockGameScreen(
-                viewModel = unblockViewModel,
+                viewModel = viewModelHolder.unblockViewModel,
                 onNavigateBack = {
                     navController.popBackStack()
                 }
@@ -385,13 +379,14 @@ fun GameHubApp(
 
         // --- MEMORY CARDS GAME SCREENS ---
         composable("memory_home") {
+            val vm = viewModelHolder.memoryViewModel
             MemoryHomeScreen(
-                viewModel = memoryViewModel,
+                viewModel = vm,
                 onNavigateBack = {
                     navController.popBackStack()
                 },
                 onStartGame = { boardSize, mode, theme ->
-                    memoryViewModel.startNewGame(boardSize, mode, theme)
+                    vm.startNewGame(boardSize, mode, theme)
                     navController.navigate("memory_game")
                 }
             )
@@ -399,7 +394,7 @@ fun GameHubApp(
 
         composable("memory_game") {
             MemoryGameScreen(
-                viewModel = memoryViewModel,
+                viewModel = viewModelHolder.memoryViewModel,
                 onNavigateBack = {
                     navController.popBackStack()
                 }
@@ -409,7 +404,7 @@ fun GameHubApp(
         // --- COLOR SEQUENCE GAME SCREENS ---
         composable("colorsequence_home") {
             ColorSequenceHomeScreen(
-                viewModel = colorSequenceViewModel,
+                viewModel = viewModelHolder.colorSequenceViewModel,
                 onNavigateBack = {
                     navController.popBackStack()
                 },
@@ -424,7 +419,7 @@ fun GameHubApp(
             arguments = listOf(navArgument("levelId") { type = NavType.IntType })
         ) {
             ColorSequenceGameScreen(
-                viewModel = colorSequenceViewModel,
+                viewModel = viewModelHolder.colorSequenceViewModel,
                 onNavigateBack = {
                     navController.popBackStack()
                 }
@@ -434,7 +429,7 @@ fun GameHubApp(
         // --- 2048 GAME SCREENS ---
         composable("game2048_home") {
             Game2048HomeScreen(
-                viewModel = game2048ViewModel,
+                viewModel = viewModelHolder.game2048ViewModel,
                 onNavigateBack = {
                     navController.popBackStack()
                 },
@@ -446,7 +441,7 @@ fun GameHubApp(
 
         composable("game2048_game") {
             Game2048GameScreen(
-                viewModel = game2048ViewModel,
+                viewModel = viewModelHolder.game2048ViewModel,
                 onNavigateBack = {
                     navController.popBackStack()
                 }
@@ -488,7 +483,7 @@ fun GameHubApp(
             val levelId = backStackEntry.arguments?.getInt("levelId") ?: 1
             GameScreen(
                 levelId = levelId,
-                viewModel = gameViewModel,
+                viewModel = gameViewModelProvider(),
                 onNavigateBack = {
                     navController.popBackStack()
                 },
@@ -550,17 +545,18 @@ fun GameHubApp(
 
         // --- STOP THE TIME SCREENS ---
         composable("stoptime_home") {
+            val vm = viewModelHolder.stopTheTimeViewModel
             StopTheTimeHomeScreen(
-                viewModel = stopTheTimeViewModel,
+                viewModel = vm,
                 onNavigateBack = {
                     navController.popBackStack()
                 },
                 onStartCampaignLevel = { levelNum ->
-                    stopTheTimeViewModel.startCampaignLevel(levelNum)
+                    vm.startCampaignLevel(levelNum)
                     navController.navigate("stoptime_game")
                 },
                 onStartCustomGame = { mode, difficulty, customTarget, playerCount ->
-                    stopTheTimeViewModel.startCustomGame(mode, difficulty, customTarget, playerCount)
+                    vm.startCustomGame(mode, difficulty, customTarget, playerCount)
                     navController.navigate("stoptime_game")
                 }
             )
@@ -568,7 +564,7 @@ fun GameHubApp(
 
         composable("stoptime_game") {
             StopTheTimeGameScreen(
-                viewModel = stopTheTimeViewModel,
+                viewModel = viewModelHolder.stopTheTimeViewModel,
                 onNavigateBack = {
                     navController.popBackStack()
                 }
@@ -577,17 +573,18 @@ fun GameHubApp(
 
         // --- COLOR SWITCH SCREENS ---
         composable("colorswitch_home") {
+            val vm = viewModelHolder.colorSwitchViewModel
             ColorSwitchHomeScreen(
-                viewModel = colorSwitchViewModel,
+                viewModel = vm,
                 onNavigateBack = {
                     navController.popBackStack()
                 },
                 onStartCampaignLevel = { levelNum ->
-                    colorSwitchViewModel.startCampaignLevel(levelNum)
+                    vm.startCampaignLevel(levelNum)
                     navController.navigate("colorswitch_game")
                 },
                 onStartEndless = {
-                    colorSwitchViewModel.startEndlessMode()
+                    vm.startEndlessMode()
                     navController.navigate("colorswitch_game")
                 }
             )
@@ -595,7 +592,7 @@ fun GameHubApp(
 
         composable("colorswitch_game") {
             ColorSwitchGameScreen(
-                viewModel = colorSwitchViewModel,
+                viewModel = viewModelHolder.colorSwitchViewModel,
                 onNavigateBack = {
                     navController.popBackStack()
                 }
@@ -604,17 +601,18 @@ fun GameHubApp(
 
         // --- KNIFE HIT SCREENS ---
         composable("knifehit_home") {
+            val vm = viewModelHolder.knifeHitViewModel
             KnifeHitHomeScreen(
-                viewModel = knifeHitViewModel,
+                viewModel = vm,
                 onNavigateBack = {
                     navController.popBackStack()
                 },
                 onStartCampaignLevel = { stage ->
-                    knifeHitViewModel.startCampaignLevel(stage)
+                    vm.startCampaignLevel(stage)
                     navController.navigate("knifehit_game")
                 },
                 onStartBossRush = { stage ->
-                    knifeHitViewModel.startBossRushStage(stage)
+                    vm.startBossRushStage(stage)
                     navController.navigate("knifehit_game")
                 }
             )
@@ -622,7 +620,7 @@ fun GameHubApp(
 
         composable("knifehit_game") {
             KnifeHitGameScreen(
-                viewModel = knifeHitViewModel,
+                viewModel = viewModelHolder.knifeHitViewModel,
                 onNavigateBack = {
                     navController.popBackStack()
                 }
@@ -631,13 +629,14 @@ fun GameHubApp(
 
         // --- AA SCREENS ---
         composable("aa_home") {
+            val vm = viewModelHolder.aaViewModel
             AAHomeScreen(
-                viewModel = aaViewModel,
+                viewModel = vm,
                 onNavigateBack = {
                     navController.popBackStack()
                 },
                 onStartLevel = { levelNum ->
-                    aaViewModel.startLevel(levelNum)
+                    vm.startLevel(levelNum)
                     navController.navigate("aa_game")
                 }
             )
@@ -645,7 +644,7 @@ fun GameHubApp(
 
         composable("aa_game") {
             AAGameScreen(
-                viewModel = aaViewModel,
+                viewModel = viewModelHolder.aaViewModel,
                 onNavigateBack = {
                     navController.popBackStack()
                 }
@@ -654,13 +653,14 @@ fun GameHubApp(
 
         // --- MINI TOWER DEFENSE SCREENS ---
         composable("minitd_home") {
+            val vm = viewModelHolder.miniTDViewModel
             MiniTDHomeScreen(
-                viewModel = miniTDViewModel,
+                viewModel = vm,
                 onNavigateBack = {
                     navController.popBackStack()
                 },
                 onStartLevel = { levelNum ->
-                    miniTDViewModel.startLevel(levelNum)
+                    vm.startLevel(levelNum)
                     navController.navigate("minitd_game")
                 }
             )
@@ -668,7 +668,7 @@ fun GameHubApp(
 
         composable("minitd_game") {
             MiniTDGameScreen(
-                viewModel = miniTDViewModel,
+                viewModel = viewModelHolder.miniTDViewModel,
                 onNavigateBack = {
                     navController.popBackStack()
                 }
@@ -677,13 +677,14 @@ fun GameHubApp(
 
         // --- ROPE AROUND SCREENS ---
         composable("ropearound_home") {
+            val vm = viewModelHolder.ropeAroundViewModel
             RopeAroundHomeScreen(
-                viewModel = ropeAroundViewModel,
+                viewModel = vm,
                 onNavigateBack = {
                     navController.popBackStack()
                 },
                 onStartLevel = { levelNum ->
-                    ropeAroundViewModel.startLevel(levelNum)
+                    vm.startLevel(levelNum)
                     navController.navigate("ropearound_game")
                 }
             )
@@ -691,7 +692,7 @@ fun GameHubApp(
 
         composable("ropearound_game") {
             RopeAroundGameScreen(
-                viewModel = ropeAroundViewModel,
+                viewModel = viewModelHolder.ropeAroundViewModel,
                 onNavigateBack = {
                     navController.popBackStack()
                 }
@@ -700,13 +701,14 @@ fun GameHubApp(
 
         // --- ROPE RESCUE SCREENS ---
         composable("roperescue_home") {
+            val vm = viewModelHolder.ropeRescueViewModel
             RopeRescueHomeScreen(
-                viewModel = ropeRescueViewModel,
+                viewModel = vm,
                 onNavigateBack = {
                     navController.popBackStack()
                 },
                 onStartLevel = { levelNum ->
-                    ropeRescueViewModel.startLevel(levelNum)
+                    vm.startLevel(levelNum)
                     navController.navigate("roperescue_game")
                 }
             )
@@ -714,7 +716,7 @@ fun GameHubApp(
 
         composable("roperescue_game") {
             RopeRescueGameScreen(
-                viewModel = ropeRescueViewModel,
+                viewModel = viewModelHolder.ropeRescueViewModel,
                 onNavigateBack = {
                     navController.popBackStack()
                 }
@@ -723,13 +725,14 @@ fun GameHubApp(
 
         // --- PIC PUZZLE SCREENS ---
         composable("picpuzzle_home") {
+            val vm = viewModelHolder.picPuzzleViewModel
             PicPuzzleHomeScreen(
-                viewModel = picPuzzleViewModel,
+                viewModel = vm,
                 onNavigateBack = {
                     navController.popBackStack()
                 },
                 onStartLevel = { levelNum ->
-                    picPuzzleViewModel.startLevel(levelNum)
+                    vm.startLevel(levelNum)
                     navController.navigate("picpuzzle_game")
                 }
             )
@@ -737,7 +740,7 @@ fun GameHubApp(
 
         composable("picpuzzle_game") {
             PicPuzzleGameScreen(
-                viewModel = picPuzzleViewModel,
+                viewModel = viewModelHolder.picPuzzleViewModel,
                 onNavigateBack = {
                     navController.popBackStack()
                 }
@@ -746,13 +749,14 @@ fun GameHubApp(
 
         // --- PULL THE PIN SCREENS ---
         composable("pullthepin_home") {
+            val vm = viewModelHolder.pullThePinViewModel
             PullThePinHomeScreen(
-                viewModel = pullThePinViewModel,
+                viewModel = vm,
                 onNavigateBack = {
                     navController.popBackStack()
                 },
                 onStartLevel = { levelNum ->
-                    pullThePinViewModel.startLevel(levelNum)
+                    vm.startLevel(levelNum)
                     navController.navigate("pullthepin_game")
                 }
             )
@@ -760,7 +764,103 @@ fun GameHubApp(
 
         composable("pullthepin_game") {
             PullThePinGameScreen(
-                viewModel = pullThePinViewModel,
+                viewModel = viewModelHolder.pullThePinViewModel,
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // --- HAPPY GLASS SCREENS ---
+        composable("happyglass_home") {
+            val vm = viewModelHolder.happyGlassViewModel
+            HappyGlassHomeScreen(
+                viewModel = vm,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onStartLevel = { levelNum ->
+                    vm.startLevel(levelNum)
+                    navController.navigate("happyglass_game")
+                }
+            )
+        }
+
+        composable("happyglass_game") {
+            HappyGlassGameScreen(
+                viewModel = viewModelHolder.happyGlassViewModel,
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // --- MR BULLET SCREENS ---
+        composable("mrbullet_home") {
+            val vm = viewModelHolder.mrBulletViewModel
+            MrBulletHomeScreen(
+                viewModel = vm,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onStartLevel = { levelNum ->
+                    vm.startLevel(levelNum)
+                    navController.navigate("mrbullet_game")
+                }
+            )
+        }
+
+        composable("mrbullet_game") {
+            MrBulletGameScreen(
+                viewModel = viewModelHolder.mrBulletViewModel,
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // --- PROTECT SHEEP SCREENS ---
+        composable("protectsheep_home") {
+            val vm = viewModelHolder.protectSheepViewModel
+            ProtectSheepHomeScreen(
+                viewModel = vm,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onStartLevel = { levelNum ->
+                    vm.startLevel(levelNum)
+                    navController.navigate("protectsheep_game")
+                }
+            )
+        }
+
+        composable("protectsheep_game") {
+            ProtectSheepGameScreen(
+                viewModel = viewModelHolder.protectSheepViewModel,
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // --- FUN FRENZY RESCUE SCREENS ---
+        composable("funfrenzy_home") {
+            val vm = viewModelHolder.funFrenzyViewModel
+            FunFrenzyHomeScreen(
+                viewModel = vm,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onStartLevel = { levelNum ->
+                    vm.startLevel(levelNum)
+                    navController.navigate("funfrenzy_game")
+                }
+            )
+        }
+
+        composable("funfrenzy_game") {
+            FunFrenzyGameScreen(
+                viewModel = viewModelHolder.funFrenzyViewModel,
                 onNavigateBack = {
                     navController.popBackStack()
                 }

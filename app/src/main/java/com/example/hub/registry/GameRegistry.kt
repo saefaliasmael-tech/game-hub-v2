@@ -30,6 +30,10 @@ object GameRegistry {
     const val ROPE_RESCUE_ID = "rope_rescue"
     const val PIC_PUZZLE_ID = "pic_puzzle"
     const val PULL_THE_PIN_ID = "pull_the_pin"
+    const val HAPPY_GLASS_ID = "happy_glass"
+    const val MR_BULLET_ID = "mr_bullet"
+    const val PROTECT_SHEEP_ID = "protect_sheep"
+    const val FUN_FRENZY_ID = "fun_frenzy"
     const val BALL_SORT_ID = "ball_sort"
     const val BLOCK_PUZZLE_ID = "block_puzzle"
 
@@ -318,6 +322,82 @@ object GameRegistry {
             order = 15,
             totalLevelsEstimate = "100 Levels",
             difficultyEstimate = "Physics & Gravity"
+        ),
+        GameInfo(
+            id = HAPPY_GLASS_ID,
+            name = "Happy Glass",
+            description = "Draw lines strategically to guide flowing water streams and fill the thirsty smiling glass.",
+            longDescription = "A delightful physics drawing puzzle! Sketch dynamic line barriers, ramps, and funnels to guide streaming water around tricky obstacles and fill the glass right up to the happy line with minimal ink across 100 creative levels.",
+            category = GameCategory.PUZZLE,
+            version = "1.0",
+            isAvailable = true,
+            isFeatured = true,
+            isNew = true,
+            isComingSoon = false,
+            primaryColor = Color(0xFF38BDF8),
+            secondaryColor = Color(0xFF0F2B48),
+            accentColor = Color(0xFF818CF8),
+            entryRoute = "happyglass_home",
+            order = 16,
+            totalLevelsEstimate = "100 Levels",
+            difficultyEstimate = "Drawing & Physics"
+        ),
+        GameInfo(
+            id = MR_BULLET_ID,
+            name = "Mr Bullet",
+            description = "Aim laser sight, bounce ricocheting bullets off steel walls, and eliminate all enemy targets.",
+            longDescription = "A tactical spy shooting puzzle! Utilize precision angles, multi-bounce ricochets, and explosive TNT chain reactions across 100 tactical missions to wipe out rogue syndicates with limited ammunition.",
+            category = GameCategory.ARCADE,
+            version = "1.0",
+            isAvailable = true,
+            isFeatured = true,
+            isNew = true,
+            isComingSoon = false,
+            primaryColor = Color(0xFFEF4444),
+            secondaryColor = Color(0xFF1E293B),
+            accentColor = Color(0xFFF59E0B),
+            entryRoute = "mrbullet_home",
+            order = 17,
+            totalLevelsEstimate = "100 Levels",
+            difficultyEstimate = "Ricochet & Angles"
+        ),
+        GameInfo(
+            id = PROTECT_SHEEP_ID,
+            name = "Protect Sheep",
+            description = "Draw protective enclosures to defend the adorable sheep from furious swarms of bees.",
+            longDescription = "A charming physics protection brain teaser! Sketch customized domes and defensive barricades to shelter fluffy sheep from buzzing bee attacks across 100 tactical pasture challenges.",
+            category = GameCategory.PUZZLE,
+            version = "1.0",
+            isAvailable = true,
+            isFeatured = true,
+            isNew = true,
+            isComingSoon = false,
+            primaryColor = Color(0xFF22C55E),
+            secondaryColor = Color(0xFF1E3A1E),
+            accentColor = Color(0xFFEAB308),
+            entryRoute = "protectsheep_home",
+            order = 18,
+            totalLevelsEstimate = "100 Levels",
+            difficultyEstimate = "Defense & Physics"
+        ),
+        GameInfo(
+            id = FUN_FRENZY_ID,
+            name = "Fun Frenzy",
+            description = "Lightning reflex micro minigame party! Beat rapid-fire micro challenges before the fuse runs out.",
+            longDescription = "A high-speed reflex party gauntlet! Survive relentless strings of 3-to-5 second micro-challenges—tap rushing, catching gems, popping balloons, dodging falling rocks, needle timing, and wire cutting across 100 fast-paced stages.",
+            category = GameCategory.ARCADE,
+            version = "1.0",
+            isAvailable = true,
+            isFeatured = true,
+            isNew = true,
+            isComingSoon = false,
+            primaryColor = Color(0xFFEC4899),
+            secondaryColor = Color(0xFF1E1035),
+            accentColor = Color(0xFFFBBF24),
+            entryRoute = "funfrenzy_home",
+            order = 19,
+            totalLevelsEstimate = "100 Levels",
+            difficultyEstimate = "Rapid Reflexes"
         ),
         GameInfo(
             id = BALL_SORT_ID,

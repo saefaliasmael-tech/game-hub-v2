@@ -44,6 +44,18 @@ fun AAGameScreen(
     val soundEnabled by viewModel.soundEnabledFlow.collectAsState()
     val interactionSource = remember { MutableInteractionSource() }
 
+    LaunchedEffect(Unit) {
+        if (state.remainingBallNumbers.isEmpty() && !state.isGameOver && !state.isWon) {
+            viewModel.startLevel(state.levelNumber.coerceAtLeast(1))
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.pauseGame()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(

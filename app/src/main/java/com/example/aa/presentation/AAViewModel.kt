@@ -41,8 +41,24 @@ class AAViewModel(
     val progressFlow = repository.progressFlow
     val completedLevelsFlow = repository.completedLevelsFlow
 
-    init {
-        startLevel(1)
+    // Levels and game loop are started on demand when the screen or user launches a level
+
+    fun pauseGame() {
+        val current = _gameState.value
+        if (!current.isPaused) {
+            _gameState.value = current.copy(isPaused = true)
+        }
+    }
+
+    fun resumeGame() {
+        val current = _gameState.value
+        if (current.isPaused) {
+            _gameState.value = current.copy(isPaused = false)
+        }
+    }
+
+    fun stopGameLoop() {
+        gameLoopJob?.cancel()
     }
 
     fun startLevel(levelNumber: Int) {
