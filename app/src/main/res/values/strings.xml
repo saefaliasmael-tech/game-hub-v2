@@ -1,7 +1,7 @@
 <resources>
-    <string name="app_name">Game Hub</string>
-    <string name="game_hub_title">Game Hub</string>
-    <string name="game_hub_subtitle">Play all your favorite puzzle games in one place</string>
+    <string name="app_name">Zuba Luba</string>
+    <string name="game_hub_title">Zuba Luba</string>
+    <string name="game_hub_subtitle">Portal to a Universe of Games</string>
     <string name="continue_playing">Continue Playing</string>
     <string name="featured_game">Featured Game</string>
     <string name="all_games">All Games</string>
@@ -32,19 +32,19 @@
     <string name="badge_new">NEW</string>
     <string name="badge_featured">FEATURED</string>
     <string name="badge_coming_soon">COMING SOON</string>
-    <string name="coming_soon_desc">This game is currently in development and will be included in an upcoming Game Hub update!</string>
+    <string name="coming_soon_desc">This game is currently in development and will be included in an upcoming Zuba Luba update!</string>
     <string name="game_details">Game Details</string>
     <string name="information">Information</string>
     <string name="developer">Developer</string>
-    <string name="game_hub_team">Game Hub Studio</string>
+    <string name="game_hub_team">Zuba Luba Studio</string>
     <string name="game_version">Game Version</string>
-    <string name="hub_settings">Hub Settings</string>
+    <string name="hub_settings">Zuba Luba Settings</string>
     <string name="check_for_updates">Check for Updates</string>
     <string name="checking_updates">Checking for updates...</string>
-    <string name="latest_version_message">You are using the latest version of Game Hub!</string>
+    <string name="latest_version_message">You are using the latest version of Zuba Luba!</string>
     <string name="update_available_title">New Update Available</string>
     <string name="update_required_title">Update Required</string>
-    <string name="update_required_desc">A critical update is required to continue using Game Hub.</string>
+    <string name="update_required_desc">A critical update is required to continue using Zuba Luba.</string>
     <string name="whats_new">What\'s New</string>
     <string name="update_now">Update Now</string>
     <string name="later">Later</string>
@@ -57,7 +57,7 @@
     <string name="retry">Retry</string>
     <string name="continue_offline">Continue Offline</string>
     <string name="invalid_update_file">Invalid update file or checksum mismatch.</string>
-    <string name="about_hub">About Game Hub</string>
+    <string name="about_hub">About Zuba Luba</string>
     <string name="app_version_format">Version %1$s (Build %2$d)</string>
     <string name="play">Play</string>
     <string name="worlds">Worlds</string>

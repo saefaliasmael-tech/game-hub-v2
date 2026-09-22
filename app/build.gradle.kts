@@ -17,8 +17,8 @@ android {
     applicationId = "com.aistudio.watersort.pwkzrt"
     minSdk = 24
     targetSdk = 36
-    versionCode = 23
-    versionName = "v23"
+    versionCode = 24
+    versionName = "1.0.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }

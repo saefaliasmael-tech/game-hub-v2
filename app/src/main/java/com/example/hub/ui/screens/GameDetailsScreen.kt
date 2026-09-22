@@ -29,6 +29,7 @@ import com.example.R
 import com.example.hub.data.HubPreferences
 import com.example.hub.model.GameInfo
 import com.example.hub.registry.GameRegistry
+import com.example.hub.ui.components.GameArtwork
 import com.example.hub.ui.theme.HubColors
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -181,17 +182,15 @@ fun GameDetailsScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Box(
                         modifier = Modifier
-                            .size(72.dp)
-                            .clip(RoundedCornerShape(18.dp))
-                            .background(Color.White.copy(alpha = 0.15f)),
+                            .size(100.dp)
+                            .clip(RoundedCornerShape(22.dp))
+                            .background(Color.White.copy(alpha = 0.12f))
+                            .padding(8.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = game.name.take(2).uppercase(),
-                            style = MaterialTheme.typography.headlineLarge.copy(
-                                color = Color.White,
-                                fontWeight = FontWeight.Black
-                            )
+                        GameArtwork(
+                            gameId = game.id,
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
 

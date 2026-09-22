@@ -72,6 +72,7 @@ import com.example.hub.registry.GameRegistry
 import com.example.hub.ui.screens.GameDetailsScreen
 import com.example.hub.ui.screens.HubHomeScreen
 import com.example.hub.ui.screens.HubSettingsScreen
+import com.example.hub.ui.screens.ZubaLubaSplashScreen
 import com.example.knifehit.core.repository.KnifeHitRepository
 import com.example.knifehit.presentation.KnifeHitViewModel
 import com.example.knifehit.presentation.ui.KnifeHitGameScreen

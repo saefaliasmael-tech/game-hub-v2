@@ -63,24 +63,23 @@ fun GameCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Game Art Thumbnail with gradient and border
+                // Game Art Thumbnail with dedicated artwork
                 Box(
                     modifier = Modifier
-                        .size(54.dp)
+                        .size(56.dp)
                         .clip(RoundedCornerShape(16.dp))
                         .background(
                             Brush.linearGradient(
-                                listOf(game.primaryColor, game.secondaryColor)
+                                listOf(game.primaryColor.copy(alpha = 0.35f), game.secondaryColor)
                             )
                         )
-                        .border(1.dp, Color.White.copy(alpha = 0.25f), RoundedCornerShape(16.dp)),
+                        .border(1.dp, Color.White.copy(alpha = 0.25f), RoundedCornerShape(16.dp))
+                        .padding(5.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = game.name.take(2).uppercase(),
-                        fontWeight = FontWeight.ExtraBold,
-                        color = Color.White,
-                        fontSize = 18.sp
+                    GameArtwork(
+                        gameId = game.id,
+                        modifier = Modifier.fillMaxSize()
                     )
                 }
 

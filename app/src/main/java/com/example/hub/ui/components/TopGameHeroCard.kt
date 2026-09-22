@@ -64,6 +64,20 @@ fun TopGameHeroCard(
                     )
             )
 
+            // Game Artwork Accent in right background
+            Box(
+                modifier = Modifier
+                    .size(115.dp)
+                    .align(Alignment.CenterEnd)
+                    .offset(x = 12.dp)
+                    .padding(12.dp)
+            ) {
+                GameArtwork(
+                    gameId = game.id,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+
             // Content Column
             Column(
                 modifier = Modifier

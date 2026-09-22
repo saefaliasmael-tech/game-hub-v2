@@ -22,6 +22,6 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "Game Hub"
+rootProject.name = "Zuba Luba"
 
 include(":app")

@@ -1,7 +1,7 @@
 <resources>
-    <string name="app_name">Game Hub</string>
-    <string name="game_hub_title">Game Hub</string>
-    <string name="game_hub_subtitle">العب جميع ألعاب الألغاز المفضلة لديك في مكان واحد</string>
+    <string name="app_name">Zuba Luba</string>
+    <string name="game_hub_title">Zuba Luba</string>
+    <string name="game_hub_subtitle">بوابة إلى عالم من الألعاب</string>
     <string name="continue_playing">متابعة اللعب</string>
     <string name="featured_game">لعبة مميزة</string>
     <string name="all_games">جميع الألعاب</string>
@@ -32,19 +32,19 @@
     <string name="badge_new">جديد</string>
     <string name="badge_featured">مميز</string>
     <string name="badge_coming_soon">قريباً</string>
-    <string name="coming_soon_desc">هذه اللعبة قيد التطوير حالياً وستكون متاحة في تحديث قادم لـ Game Hub!</string>
+    <string name="coming_soon_desc">هذه اللعبة قيد التطوير حالياً وستكون متاحة في تحديث قادم لـ Zuba Luba!</string>
     <string name="game_details">تفاصيل اللعبة</string>
     <string name="information">معلومات</string>
     <string name="developer">المطور</string>
-    <string name="game_hub_team">فريق استوديو Game Hub</string>
+    <string name="game_hub_team">استوديو Zuba Luba</string>
     <string name="game_version">إصدار اللعبة</string>
-    <string name="hub_settings">إعدادات المنصة</string>
+    <string name="hub_settings">إعدادات Zuba Luba</string>
     <string name="check_for_updates">فحص التحديثات</string>
     <string name="checking_updates">جاري فحص التحديثات...</string>
-    <string name="latest_version_message">أنت تستخدم أحدث إصدار من Game Hub!</string>
+    <string name="latest_version_message">أنت تستخدم أحدث إصدار من Zuba Luba!</string>
     <string name="update_available_title">تحديث جديد متوفر</string>
     <string name="update_required_title">تحديث إجباري مطلوب</string>
-    <string name="update_required_desc">يلزم تحديث تطبيق Game Hub للمتابعة واستخدام الألعاب.</string>
+    <string name="update_required_desc">يلزم تحديث تطبيق Zuba Luba للمتابعة واستخدام الألعاب.</string>
     <string name="whats_new">الجديد في هذا الإصدار</string>
     <string name="update_now">تحديث الآن</string>
     <string name="later">لاحقاً</string>
@@ -57,7 +57,7 @@
     <string name="retry">إعادة المحاولة</string>
     <string name="continue_offline">المتابعة بدون إنترنت</string>
     <string name="invalid_update_file">ملف التحديث غير صالح أو لم يتطابق التحقق الأمني.</string>
-    <string name="about_hub">حول Game Hub</string>
+    <string name="about_hub">حول Zuba Luba</string>
     <string name="app_version_format">الإصدار %1$s (رقم البناء %2$d)</string>
     <string name="play">لعب</string>
     <string name="worlds">العوالم</string>

@@ -2,6 +2,7 @@ package com.example.hub.ui.screens
 
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,8 +22,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -377,6 +380,15 @@ private fun HomeScreenContent(
                         unfocusedTextColor = HubColors.HighText
                     ),
                     singleLine = true
+                )
+            }
+        }
+
+        // Zuba Luba Platform Showcase Hero Banner
+        if (searchQuery.isEmpty()) {
+            item {
+                ZubaLubaHeroBanner(
+                    onExploreClick = onViewAllClick
                 )
             }
         }
@@ -1029,6 +1041,156 @@ private fun EmbeddedSettingsContent(
                         text = "• Offline-First: All games run locally without network dependencies.",
                         style = MaterialTheme.typography.bodySmall.copy(color = HubColors.LowText)
                     )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ZubaLubaHeroBanner(
+    onExploreClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(22.dp))
+            .border(
+                width = 1.2.dp,
+                brush = Brush.horizontalGradient(
+                    listOf(HubColors.PrimaryViolet, HubColors.Cyan)
+                ),
+                shape = RoundedCornerShape(22.dp)
+            )
+            .clickable { onExploreClick() }
+            .testTag("hub_hero_banner"),
+        colors = CardDefaults.cardColors(containerColor = HubColors.SurfaceMid),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(16f / 8.5f)
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.img_zuba_luba_hero),
+                contentDescription = "Zuba Luba Universe",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+
+            // Bottom gradient overlay for readability
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                HubColors.Void.copy(alpha = 0.45f),
+                                HubColors.Void.copy(alpha = 0.94f)
+                            )
+                        )
+                    )
+            )
+
+            // Overlay content
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(14.dp),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Top Tag
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = HubColors.SurfaceHigh.copy(alpha = 0.85f),
+                        border = androidx.compose.foundation.BorderStroke(0.8.dp, HubColors.Cyan.copy(alpha = 0.5f))
+                    ) {
+                        Text(
+                            text = "19 STANDALONE GAMES",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = HubColors.Cyan,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 0.8.sp,
+                                fontSize = 10.sp
+                            ),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = HubColors.PrimaryViolet.copy(alpha = 0.85f)
+                    ) {
+                        Text(
+                            text = "v1.0.0",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 10.sp
+                            ),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+
+                // Bottom Titles
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.game_hub_title),
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Black,
+                                color = Color.White,
+                                letterSpacing = 0.5.sp
+                            )
+                        )
+                        Text(
+                            text = stringResource(R.string.game_hub_subtitle),
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = HubColors.HighText.copy(alpha = 0.85f)
+                            ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = HubColors.Cyan,
+                        modifier = Modifier.padding(start = 8.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.PlayArrow,
+                                contentDescription = null,
+                                tint = HubColors.Void,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = stringResource(R.string.explore_catalog),
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    color = HubColors.Void,
+                                    fontWeight = FontWeight.ExtraBold
+                                )
+                            )
+                        }
+                    }
                 }
             }
         }

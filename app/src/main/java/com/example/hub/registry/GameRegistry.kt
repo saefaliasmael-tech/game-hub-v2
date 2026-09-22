@@ -34,8 +34,6 @@ object GameRegistry {
     const val MR_BULLET_ID = "mr_bullet"
     const val PROTECT_SHEEP_ID = "protect_sheep"
     const val FUN_FRENZY_ID = "fun_frenzy"
-    const val BALL_SORT_ID = "ball_sort"
-    const val BLOCK_PUZZLE_ID = "block_puzzle"
 
     private val gamesList: List<GameInfo> = listOf(
         GameInfo(
@@ -326,27 +324,27 @@ object GameRegistry {
         GameInfo(
             id = HAPPY_GLASS_ID,
             name = "Happy Glass",
-            description = "Draw lines strategically to guide flowing water streams and fill the thirsty smiling glass.",
-            longDescription = "A delightful physics drawing puzzle! Sketch dynamic line barriers, ramps, and funnels to guide streaming water around tricky obstacles and fill the glass right up to the happy line with minimal ink across 100 creative levels.",
+            description = "Draw lines with limited ink to direct flowing water drops into the empty glass.",
+            longDescription = "An ingenious physics puzzle! Draw physical lines to guide water streams from taps into sad empty glasses. Turn their frowns upside down across 100 tactical levels featuring obstacles, ramps, and ink conservation scoring.",
             category = GameCategory.PUZZLE,
             version = "1.0",
             isAvailable = true,
             isFeatured = true,
             isNew = true,
             isComingSoon = false,
-            primaryColor = Color(0xFF38BDF8),
-            secondaryColor = Color(0xFF0F2B48),
-            accentColor = Color(0xFF818CF8),
+            primaryColor = Color(0xFF0EA5E9),
+            secondaryColor = Color(0xFF0C4A6E),
+            accentColor = Color(0xFF38BDF8),
             entryRoute = "happyglass_home",
             order = 16,
             totalLevelsEstimate = "100 Levels",
-            difficultyEstimate = "Drawing & Physics"
+            difficultyEstimate = "Physics & Drawing"
         ),
         GameInfo(
             id = MR_BULLET_ID,
             name = "Mr Bullet",
-            description = "Aim laser sight, bounce ricocheting bullets off steel walls, and eliminate all enemy targets.",
-            longDescription = "A tactical spy shooting puzzle! Utilize precision angles, multi-bounce ricochets, and explosive TNT chain reactions across 100 tactical missions to wipe out rogue syndicates with limited ammunition.",
+            description = "Aim laser-guided ricochet bullets to eliminate all bandit targets and ignite TNT barrels.",
+            longDescription = "A legendary tactical trick-shot shooter! Play as a suave secret agent, calculate geometric laser ricochets off steel girders, explode TNT barrels, and neutralize all criminal targets with minimum ammo across 100 missions.",
             category = GameCategory.ARCADE,
             version = "1.0",
             isAvailable = true,
@@ -354,88 +352,50 @@ object GameRegistry {
             isNew = true,
             isComingSoon = false,
             primaryColor = Color(0xFFEF4444),
-            secondaryColor = Color(0xFF1E293B),
-            accentColor = Color(0xFFF59E0B),
+            secondaryColor = Color(0xFF450A0A),
+            accentColor = Color(0xFFFBBF24),
             entryRoute = "mrbullet_home",
             order = 17,
             totalLevelsEstimate = "100 Levels",
-            difficultyEstimate = "Ricochet & Angles"
+            difficultyEstimate = "Trajectory & Aim"
         ),
         GameInfo(
             id = PROTECT_SHEEP_ID,
             name = "Protect Sheep",
-            description = "Draw protective enclosures to defend the adorable sheep from furious swarms of bees.",
-            longDescription = "A charming physics protection brain teaser! Sketch customized domes and defensive barricades to shelter fluffy sheep from buzzing bee attacks across 100 tactical pasture challenges.",
+            description = "Draw protective fences to shield cute pasture sheep from attacking wolves and falling boulders.",
+            longDescription = "An adorable and tense defensive drawing puzzle! Trace barriers and pens around innocent sheep to hold off ravenous wolves, angry bee swarms, and rolling boulders until the countdown timer expires across 100 levels.",
             category = GameCategory.PUZZLE,
             version = "1.0",
             isAvailable = true,
             isFeatured = true,
             isNew = true,
             isComingSoon = false,
-            primaryColor = Color(0xFF22C55E),
-            secondaryColor = Color(0xFF1E3A1E),
-            accentColor = Color(0xFFEAB308),
+            primaryColor = Color(0xFF10B981),
+            secondaryColor = Color(0xFF064E3B),
+            accentColor = Color(0xFF34D399),
             entryRoute = "protectsheep_home",
             order = 18,
             totalLevelsEstimate = "100 Levels",
-            difficultyEstimate = "Defense & Physics"
+            difficultyEstimate = "Drawing & Defense"
         ),
         GameInfo(
             id = FUN_FRENZY_ID,
             name = "Fun Frenzy",
-            description = "Lightning reflex micro minigame party! Beat rapid-fire micro challenges before the fuse runs out.",
-            longDescription = "A high-speed reflex party gauntlet! Survive relentless strings of 3-to-5 second micro-challenges—tap rushing, catching gems, popping balloons, dodging falling rocks, needle timing, and wire cutting across 100 fast-paced stages.",
-            category = GameCategory.ARCADE,
+            description = "Swipe and cut suspension ropes in the right order to safely rescue your stranded buddy.",
+            longDescription = "A high-stakes physics rope-cutting rescue adventure! Swipe your finger to slice tension ropes, control pendulum swings, avoid razor-sharp sawblades and lethal lava pits, and safely drop into the rescue portal across 100 levels.",
+            category = GameCategory.PUZZLE,
             version = "1.0",
             isAvailable = true,
             isFeatured = true,
             isNew = true,
             isComingSoon = false,
-            primaryColor = Color(0xFFEC4899),
-            secondaryColor = Color(0xFF1E1035),
-            accentColor = Color(0xFFFBBF24),
+            primaryColor = Color(0xFFA855F7),
+            secondaryColor = Color(0xFF3B0764),
+            accentColor = Color(0xFFC084FC),
             entryRoute = "funfrenzy_home",
             order = 19,
             totalLevelsEstimate = "100 Levels",
-            difficultyEstimate = "Rapid Reflexes"
-        ),
-        GameInfo(
-            id = BALL_SORT_ID,
-            name = "Ball Sort Master",
-            description = "Stack and sort colorful balls into matching tubes.",
-            longDescription = "A vibrant ball stacking brain teaser! Drop bouncing spheres into test tubes to sort them by color pattern.",
-            category = GameCategory.PUZZLE,
-            version = "1.0",
-            isAvailable = false,
-            isFeatured = false,
-            isNew = false,
-            isComingSoon = true,
-            primaryColor = Color(0xFFFF7B00),
-            secondaryColor = Color(0xFF6A040F),
-            accentColor = Color(0xFFFFB703),
-            entryRoute = "coming_soon",
-            order = 10,
-            totalLevelsEstimate = "Coming Soon",
-            difficultyEstimate = "Easy → Hard"
-        ),
-        GameInfo(
-            id = BLOCK_PUZZLE_ID,
-            name = "Block Puzzle Classic",
-            description = "Fit geometric blocks into the 8x8 grid to clear full lines.",
-            longDescription = "Place various block shapes on the board, complete vertical and horizontal lines to clear space and rack up massive combo streaks.",
-            category = GameCategory.LOGIC,
-            version = "1.0",
-            isAvailable = false,
-            isFeatured = false,
-            isNew = false,
-            isComingSoon = true,
-            primaryColor = Color(0xFF7209B7),
-            secondaryColor = Color(0xFF3A0CA3),
-            accentColor = Color(0xFFF72585),
-            entryRoute = "coming_soon",
-            order = 11,
-            totalLevelsEstimate = "Endless Mode",
-            difficultyEstimate = "Mind Challenging"
+            difficultyEstimate = "Physics & Rescue"
         )
     )
 
