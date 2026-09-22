@@ -5,6 +5,8 @@ import java.util.Random
 
 object MastermindEngine {
 
+    fun evaluateGuess(secret: List<PegColor>, guess: List<PegColor>): Feedback = calculateFeedback(secret, guess)
+
     /**
      * Mathematically sound Mastermind Feedback calculation algorithm.
      * Accurately prevents over-counting of duplicate colors.

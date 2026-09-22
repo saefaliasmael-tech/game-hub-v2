@@ -66,6 +66,7 @@ data class Feedback(
     val colorMatches: Int  // Correct color in wrong position (White peg)
 ) {
     val totalMatches: Int get() = exactMatches + colorMatches
+    fun isSolved(codeLength: Int): Boolean = exactMatches == codeLength
 }
 
 data class GuessRow(

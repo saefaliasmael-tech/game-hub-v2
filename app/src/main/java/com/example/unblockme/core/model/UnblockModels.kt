@@ -5,12 +5,12 @@ enum class Orientation {
     VERTICAL
 }
 
-enum class UnblockDifficulty(val title: String) {
-    EASY("Easy"),
-    NORMAL("Normal"),
-    HARD("Hard"),
-    VERY_HARD("Very Hard"),
-    EXPERT("Expert");
+enum class UnblockDifficulty(val displayName: String, val levelRange: IntRange) {
+    EASY("Easy", 1..20),
+    NORMAL("Normal", 21..40),
+    HARD("Hard", 41..60),
+    VERY_HARD("Very Hard", 61..80),
+    EXPERT("Expert", 81..100);
 
     companion object {
         fun fromLevelNumber(levelNumber: Int): UnblockDifficulty {
@@ -66,14 +66,18 @@ data class UnblockLevel(
     val minMoves: Int
 )
 
-data class UnblockState(
+data class UnblockGameState(
     val levelNumber: Int = 1,
     val difficulty: UnblockDifficulty = UnblockDifficulty.EASY,
     val blocks: List<Block> = emptyList(),
-    val moveCount: Int = 0,
     val minMoves: Int = 0,
+    val movesCount: Int = 0,
+    val moveHistory: List<UnblockMove> = emptyList(),
     val isWon: Boolean = false,
-    val stars: Int = 0,
-    val moveHistory: List<List<Block>> = emptyList(),
-    val hintMove: Pair<String, Int>? = null
+    val hintsUsed: Int = 0,
+    val highlightedBlockId: String? = null,
+    val hintMessage: String? = null,
+    val elapsedTimeSeconds: Int = 0,
+    val starsAwarded: Int = 0,
+    val bestMoves: Int = 0
 )

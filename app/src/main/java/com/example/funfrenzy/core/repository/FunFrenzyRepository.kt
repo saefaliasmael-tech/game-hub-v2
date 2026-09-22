@@ -45,7 +45,7 @@ class FunFrenzyRepository(
     val progressFlow: Flow<List<GameProgressEntity>> = progressDao.getProgressForGame(GAME_ID)
     val completedLevelsFlow: Flow<Int> = progressDao.getCompletedLevelsCount(GAME_ID)
 
-    suspend fun saveLevelCompletion(levelId: Int, timeRemaining: Int, stars: Int) = withContext(Dispatchers.IO) {
+    suspend fun saveLevelCompletion(levelId: Int, stars: Int, timeRemaining: Int = 0) = withContext(Dispatchers.IO) {
         val entity = GameProgressEntity(
             gameId = GAME_ID,
             levelId = levelId,

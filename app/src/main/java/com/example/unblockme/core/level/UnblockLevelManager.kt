@@ -46,12 +46,8 @@ object UnblockLevelManager {
     private fun createBlocksForLevel(levelNumber: Int, difficulty: UnblockDifficulty): List<Block> {
         val blocks = mutableListOf<Block>()
 
-        // Target Block is always horizontal on row 2, length 2
-        val targetStartCol = when {
-            levelNumber % 3 == 0 -> 0
-            levelNumber % 3 == 1 -> 1
-            else -> 0
-        }
+        // Target Block is always horizontal on row 2, length 2, starting at col 0
+        val targetStartCol = 0
         blocks.add(
             Block(
                 id = "target",
@@ -68,17 +64,16 @@ object UnblockLevelManager {
 
         when (variant % 5) {
             0 -> {
-                // Layout pattern A: Vertical blockers along cols 2, 3, 4
-                blocks.add(Block("v1", row = 0, col = 2, length = 2, orientation = Orientation.VERTICAL))
+                // Layout pattern A: Intro layout with solvable slider
+                blocks.add(Block("v1", row = 1, col = 2, length = 2, orientation = Orientation.VERTICAL))
                 blocks.add(Block("v2", row = 3, col = 2, length = 3, orientation = Orientation.VERTICAL))
-                blocks.add(Block("v3", row = 0, col = 3, length = 3, orientation = Orientation.VERTICAL))
-                blocks.add(Block("h1", row = 0, col = 4, length = 2, orientation = Orientation.HORIZONTAL))
-                blocks.add(Block("v4", row = 1, col = 4, length = 3, orientation = Orientation.VERTICAL))
-                blocks.add(Block("h2", row = 4, col = 3, length = 3, orientation = Orientation.HORIZONTAL))
-                blocks.add(Block("v5", row = 3, col = 0, length = 2, orientation = Orientation.VERTICAL))
-                blocks.add(Block("h3", row = 5, col = 0, length = 3, orientation = Orientation.HORIZONTAL))
+                blocks.add(Block("h1", row = 0, col = 3, length = 3, orientation = Orientation.HORIZONTAL))
+                blocks.add(Block("v3", row = 3, col = 3, length = 2, orientation = Orientation.VERTICAL))
+                blocks.add(Block("v4", row = 3, col = 4, length = 3, orientation = Orientation.VERTICAL))
+                blocks.add(Block("h2", row = 5, col = 0, length = 2, orientation = Orientation.HORIZONTAL))
+                blocks.add(Block("v5", row = 0, col = 0, length = 2, orientation = Orientation.VERTICAL))
                 if (difficulty >= UnblockDifficulty.HARD) {
-                    blocks.add(Block("h4", row = 1, col = 0, length = 2, orientation = Orientation.HORIZONTAL))
+                    blocks.add(Block("h3", row = 1, col = 4, length = 2, orientation = Orientation.HORIZONTAL))
                 }
             }
             1 -> {

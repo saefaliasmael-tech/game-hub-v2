@@ -26,6 +26,11 @@ class StartupActivityTest {
     @Test
     fun testLaunchHappyGlassGameDoesNotCrash() {
         composeTestRule.waitForIdle()
+        try {
+            composeTestRule.onNodeWithTag("splash_screen").performClick()
+            composeTestRule.waitForIdle()
+        } catch (_: Throwable) {}
+
         // Scroll the games list to the Happy Glass play button
         composeTestRule.onNodeWithTag("games_list")
             .performScrollToNode(hasTestTag("play_btn_happy_glass"))

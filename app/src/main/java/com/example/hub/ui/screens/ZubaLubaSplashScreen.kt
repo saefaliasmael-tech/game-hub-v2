@@ -4,6 +4,8 @@ import android.provider.Settings
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -82,6 +84,12 @@ fun ZubaLubaSplashScreen(
         modifier = modifier
             .fillMaxSize()
             .background(HubColors.Void)
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) {
+                onSplashFinished()
+            }
             .testTag("splash_screen"),
         contentAlignment = Alignment.Center
     ) {

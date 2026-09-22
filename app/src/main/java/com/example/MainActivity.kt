@@ -280,8 +280,19 @@ fun GameHubApp(
 
     NavHost(
         navController = navController,
-        startDestination = "hub_home"
+        startDestination = "splash"
     ) {
+        // --- SPLASH SCREEN ---
+        composable("splash") {
+            ZubaLubaSplashScreen(
+                onSplashFinished = {
+                    navController.navigate("hub_home") {
+                        popUpTo("splash") { inclusive = true }
+                    }
+                }
+            )
+        }
+
         // --- GAME HUB SCREENS ---
         composable("hub_home") {
             HubHomeScreen(

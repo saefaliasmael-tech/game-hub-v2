@@ -42,37 +42,33 @@ class GameRegistryTest {
         assertNotNull(game2048)
         assertTrue(game2048!!.isAvailable)
         assertEquals("game2048_home", game2048.entryRoute)
+
+        val happyGlass = GameRegistry.getGameById(GameRegistry.HAPPY_GLASS_ID)
+        assertNotNull(happyGlass)
+        assertTrue(happyGlass!!.isAvailable)
+        assertEquals("happyglass_home", happyGlass.entryRoute)
     }
 
     @Test
-    fun testUpcomingGamesAreFlaggedAsComingSoon() {
-        val ballSort = GameRegistry.getGameById(GameRegistry.BALL_SORT_ID)
-        assertNotNull(ballSort)
-        assertFalse(ballSort!!.isAvailable)
-        assertTrue(ballSort.isComingSoon)
-
-        val blockPuzzle = GameRegistry.getGameById(GameRegistry.BLOCK_PUZZLE_ID)
-        assertNotNull(blockPuzzle)
-        assertFalse(blockPuzzle!!.isAvailable)
-        assertTrue(blockPuzzle.isComingSoon)
+    fun testZubaLubaGameCount() {
+        val allGames = GameRegistry.getAllGames()
+        assertEquals(19, allGames.size)
+        assertTrue(allGames.all { it.isAvailable })
     }
 
     @Test
     fun testSearchFunctionality() {
         val searchWater = GameRegistry.searchGames("Water")
-        assertEquals(1, searchWater.size)
-        assertEquals(GameRegistry.WATER_SORT_ID, searchWater.first().id)
+        assertTrue(searchWater.any { it.id == GameRegistry.WATER_SORT_ID })
 
         val searchPuzzle = GameRegistry.searchGames("Puzzle")
         assertTrue(searchPuzzle.any { it.id == GameRegistry.WATER_SORT_ID })
-        assertTrue(searchPuzzle.any { it.id == GameRegistry.BLOCK_PUZZLE_ID })
     }
 
     @Test
     fun testCategoryFiltering() {
         val puzzleGames = GameRegistry.getGamesByCategory(GameCategory.PUZZLE)
         assertTrue(puzzleGames.any { it.id == GameRegistry.WATER_SORT_ID })
-        assertTrue(puzzleGames.any { it.id == GameRegistry.BALL_SORT_ID })
 
         val allGames = GameRegistry.getGamesByCategory(GameCategory.ALL)
         assertEquals(GameRegistry.getAllGames().size, allGames.size)

@@ -221,7 +221,7 @@ class FunFrenzyViewModel(
             if (it.id == id && !it.isPopped) it.copy(isPopped = true) else it
         }
         val popped = balloons.count { it.isPopped }
-        if (soundEnabledFlow.value) soundManager.play(GameSound.CARD_POP)
+        if (soundEnabledFlow.value) soundManager.play(GameSound.APPLE)
         if (hapticEnabledFlow.value) hapticManager.light()
 
         val updatedSub = current.subState.copy(balloons = balloons, poppedCount = popped)

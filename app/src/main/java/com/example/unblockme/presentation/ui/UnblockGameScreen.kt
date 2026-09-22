@@ -229,7 +229,7 @@ fun UnblockGameScreen(
                     }
 
                     // Render Blocks
-                    state.blocks.forEach { block ->
+                    for (block in state.blocks) {
                         UnblockBlockView(
                             block = block,
                             allBlocks = state.blocks,
