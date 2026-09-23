@@ -35,8 +35,10 @@ class PullThePinViewModel(
     val progressFlow = repository.progressFlow
     val completedLevelsFlow = repository.completedLevelsFlow
 
-    init {
-        startLevel(1)
+    // Levels are started on demand when the user or screen starts a level
+
+    fun stopPhysicsLoop() {
+        physicsJob?.cancel()
     }
 
     fun startLevel(levelNumber: Int) {

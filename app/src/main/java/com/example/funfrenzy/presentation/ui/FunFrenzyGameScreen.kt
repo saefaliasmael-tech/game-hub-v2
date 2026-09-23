@@ -1,44 +1,77 @@
 package com.example.funfrenzy.presentation.ui
 
-import androidx.compose.animation.core.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.VolumeMute
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.VolumeOff
 import androidx.compose.material.icons.filled.VolumeUp
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.funfrenzy.core.model.MicroGameType
-import com.example.funfrenzy.core.model.MicroResult
+import com.example.funfrenzy.core.level.FunFrenzyLevelManager
+import com.example.funfrenzy.core.model.ExitPortal
+import com.example.funfrenzy.core.model.FrenzyGamePhase
+import com.example.funfrenzy.core.model.FrenzyHazard
+import com.example.funfrenzy.core.model.FrenzyHazardType
+import com.example.funfrenzy.core.model.RescueBuddy
+import com.example.funfrenzy.core.model.RescueRope
+import com.example.funfrenzy.core.model.RopeAnchor
 import com.example.funfrenzy.presentation.FunFrenzyViewModel
-import java.util.Locale
-import kotlin.math.cos
-import kotlin.math.sin
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,36 +82,37 @@ fun FunFrenzyGameScreen(
     val state by viewModel.gameState.collectAsState()
     val soundEnabled by viewModel.soundEnabledFlow.collectAsState()
 
+    var swipeTrail by remember { mutableStateOf<List<Offset>>(emptyList()) }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.stopSimulation()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                    Column {
                         Text(
-                            "Stage ${state.levelNumber} (${state.microIndex + 1}/${state.totalMicroGames})",
-                            color = Color.White,
+                            text = "Rescue Mission ${state.levelNumber}",
+                            fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
+                            color = Color.White
                         )
-                        // Lives
-                        Row {
-                            repeat(state.maxLives) { index ->
-                                Icon(
-                                    imageVector = if (index < state.lives) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                    contentDescription = null,
-                                    tint = if (index < state.lives) Color(0xFFEC4899) else Color(0xFF4C1D95),
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        }
+                        Text(
+                            text = "Time: ${String.format("%.1f", state.timeRemainingSeconds)}s",
+                            fontSize = 12.sp,
+                            color = if (state.timeRemainingSeconds < 5f) Color(0xFFEF4444) else Color(0xFFC084FC)
+                        )
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
+                    IconButton(
+                        onClick = onNavigateBack,
+                        modifier = Modifier.testTag("funfrenzy_game_back")
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
@@ -87,590 +121,473 @@ fun FunFrenzyGameScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.toggleSound() }) {
+                    IconButton(
+                        onClick = { viewModel.toggleSound() },
+                        modifier = Modifier.testTag("funfrenzy_game_sound")
+                    ) {
                         Icon(
-                            imageVector = if (soundEnabled) Icons.Default.VolumeUp else Icons.Default.VolumeMute,
+                            imageVector = if (soundEnabled) Icons.Default.VolumeUp else Icons.Default.VolumeOff,
                             contentDescription = "Sound",
-                            tint = Color.White
+                            tint = Color(0xFFC084FC)
                         )
                     }
-                    IconButton(onClick = { viewModel.restartLevel() }) {
+                    IconButton(
+                        onClick = { viewModel.restartLevel() },
+                        modifier = Modifier.testTag("funfrenzy_game_restart")
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
                             contentDescription = "Restart",
-                            tint = Color.White
+                            tint = Color(0xFFE2E8F0)
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF1E1035))
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFF0F172A)
+                )
             )
         },
-        containerColor = Color(0xFF0F061F)
-    ) { paddingValues ->
-        Column(
+        containerColor = Color(0xFF0D0B14)
+    ) { innerPadding ->
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(innerPadding)
         ) {
-            // Fuse timer progress bar
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(8.dp)
-                    .background(Color(0xFF1E1035))
-            ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                // Main Game Canvas
                 Box(
                     modifier = Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth(state.progressRatio)
-                        .background(
-                            Brush.horizontalGradient(
-                                listOf(
-                                    if (state.progressRatio > 0.3f) Color(0xFF06B6D4) else Color(0xFFEF4444),
-                                    if (state.progressRatio > 0.3f) Color(0xFFEC4899) else Color(0xFFF59E0B)
-                                )
-                            )
-                        )
-                )
-            }
-
-            // Prompt Banner
-            Card(
-                shape = RoundedCornerShape(0.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF261447)),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = state.currentSpec.prompt,
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.ExtraBold,
-                        letterSpacing = 1.5.sp
-                    ),
-                    color = Color(0xFFFBBF24),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
+                        .weight(1f)
                         .fillMaxWidth()
-                        .padding(vertical = 12.dp)
-                )
-            }
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFF13111C))
+                ) {
+                    val anchorsMap = remember(state.anchors) {
+                        state.anchors.associateBy { it.id }
+                    }
 
-            // Main Active MicroGame Area
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.Center
-            ) {
-                when (state.currentSpec.type) {
-                    MicroGameType.TAP_RUSH -> {
-                        TapRushView(
-                            currentTaps = state.subState.currentTaps,
-                            requiredTaps = state.subState.requiredTaps,
-                            onTap = { viewModel.onTapRush() }
-                        )
-                    }
-                    MicroGameType.CATCH_FALLING -> {
-                        CatchFallingView(
-                            bucketX = state.subState.bucketX,
-                            gemX = state.subState.gemX,
-                            gemY = state.subState.gemY,
-                            onBucketMove = { viewModel.onBucketDrag(it) }
-                        )
-                    }
-                    MicroGameType.POP_BALLOONS -> {
-                        PopBalloonsView(
-                            balloons = state.subState.balloons,
-                            poppedCount = state.subState.poppedCount,
-                            requiredPops = state.subState.requiredPops,
-                            onPop = { viewModel.onPopBalloon(it) }
-                        )
-                    }
-                    MicroGameType.DODGE_ROCKS -> {
-                        DodgeRocksView(
-                            playerX = state.subState.playerX,
-                            rocks = state.subState.rocks,
-                            onPlayerMove = { viewModel.onDodgeMove(it) }
-                        )
-                    }
-                    MicroGameType.STOP_NEEDLE -> {
-                        StopNeedleView(
-                            needleAngle = state.subState.needleAngle,
-                            targetStart = state.subState.targetZoneStartAngle,
-                            targetEnd = state.subState.targetZoneEndAngle,
-                            onStop = { viewModel.onStopNeedle() }
-                        )
-                    }
-                    MicroGameType.CUT_WIRE -> {
-                        CutWireView(
-                            wires = state.subState.wires,
-                            targetColorName = state.subState.targetWireColorName,
-                            onCut = { viewModel.onCutWire(it) }
-                        )
-                    }
-                    MicroGameType.FIND_ODD_ONE -> {
-                        FindOddOneView(
-                            totalItems = state.subState.totalGridItems,
-                            oddIndex = state.subState.oddIndex,
-                            normalSym = state.subState.normalSymbol,
-                            oddSym = state.subState.oddSymbol,
-                            selectedIndex = state.subState.selectedIndex,
-                            onSelect = { viewModel.onSelectOddItem(it) }
-                        )
-                    }
-                }
-
-                // Intermission Overlay
-                if (state.isIntermission) {
-                    Box(
+                    Canvas(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.75f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Card(
-                            shape = RoundedCornerShape(20.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = if (state.microResult == MicroResult.SUCCESS) Color(0xFF065F46) else Color(0xFF7F1D1D)
-                            ),
-                            modifier = Modifier.padding(32.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(32.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    text = if (state.microResult == MicroResult.SUCCESS) "AWESOME!" else "MISSED!",
-                                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Black),
-                                    color = Color.White
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = if (state.microResult == MicroResult.SUCCESS) "Next micro challenge coming..." else "-1 Life! Watch out!",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = Color.White.copy(alpha = 0.8f)
-                                )
-                            }
-                        }
-                    }
-                }
-            }
+                            .testTag("funfrenzy_canvas")
+                            .pointerInput(state.phase) {
+                                if (state.phase == FrenzyGamePhase.PLAYING) {
+                                    detectDragGestures(
+                                        onDragStart = { offset ->
+                                            swipeTrail = listOf(offset)
+                                        },
+                                        onDrag = { change, _ ->
+                                            change.consume()
+                                            val currentTrail = swipeTrail
+                                            if (currentTrail.isNotEmpty()) {
+                                                val prev = currentTrail.last()
+                                                val curr = change.position
+                                                val scaleX = size.width / FunFrenzyLevelManager.VIRTUAL_WIDTH
+                                                val scaleY = size.height / FunFrenzyLevelManager.VIRTUAL_HEIGHT
 
-            // Defeat Dialog
-            if (state.isStageOver) {
-                AlertDialog(
-                    onDismissRequest = {},
-                    title = {
-                        Text(
-                            text = "FRENZY OVER!",
-                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                            color = Color(0xFFEF4444),
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    },
-                    text = {
-                        Text(
-                            text = "You ran out of lives during the gauntlet! Reflex speed is the key to surviving.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    },
-                    confirmButton = {
-                        Button(
-                            onClick = { viewModel.restartLevel() },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEC4899)),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("RETRY GAUNTLET", fontWeight = FontWeight.Bold, color = Color.White)
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(
-                            onClick = onNavigateBack,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("STAGE SELECT", color = Color(0xFFF472B6))
-                        }
-                    },
-                    containerColor = Color(0xFF1E1035)
-                )
-            }
-
-            // Victory Dialog
-            if (state.isStageWon) {
-                AlertDialog(
-                    onDismissRequest = {},
-                    title = {
-                        Text(
-                            text = "STAGE CLEARED!",
-                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                            color = Color(0xFF22C55E),
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    },
-                    text = {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                horizontalArrangement = Arrangement.Center,
-                                modifier = Modifier.padding(vertical = 8.dp)
-                            ) {
-                                repeat(3) { index ->
-                                    Icon(
-                                        imageVector = Icons.Default.Star,
-                                        contentDescription = null,
-                                        tint = if (index < state.stars) Color(0xFFFFD166) else Color(0xFF4C1D95),
-                                        modifier = Modifier.size(32.dp)
+                                                val p1 = Offset(prev.x / scaleX, prev.y / scaleY)
+                                                val p2 = Offset(curr.x / scaleX, curr.y / scaleY)
+                                                viewModel.onSwipeSlice(p1, p2)
+                                            }
+                                            swipeTrail = (currentTrail + change.position).takeLast(10)
+                                        },
+                                        onDragEnd = { swipeTrail = emptyList() },
+                                        onDragCancel = { swipeTrail = emptyList() }
                                     )
                                 }
                             }
-                            Text(
-                                text = "Lightning reflexes! You conquered all ${state.totalMicroGames} micro-challenges with ${state.lives} lives remaining.",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.White,
-                                textAlign = TextAlign.Center
-                            )
+                    ) {
+                        val scaleX = size.width / FunFrenzyLevelManager.VIRTUAL_WIDTH
+                        val scaleY = size.height / FunFrenzyLevelManager.VIRTUAL_HEIGHT
+
+                        // 1. Atmospheric Cavern Background
+                        drawCavernBackground()
+
+                        // 2. Anchors
+                        for (anchor in state.anchors) {
+                            drawAnchor(anchor, scaleX, scaleY)
                         }
-                    },
-                    confirmButton = {
-                        Button(
-                            onClick = { viewModel.nextLevel() },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEC4899)),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("NEXT STAGE", fontWeight = FontWeight.Bold, color = Color.White)
+
+                        // 3. Ropes
+                        for (rope in state.ropes) {
+                            val anchor = anchorsMap[rope.anchorId]
+                            if (anchor != null) {
+                                val isHinted = state.hintRopeId == rope.id
+                                drawRope(anchor, state.buddy, rope, isHinted, scaleX, scaleY)
+                            }
                         }
-                    },
-                    dismissButton = {
-                        TextButton(
-                            onClick = onNavigateBack,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("STAGE SELECT", color = Color(0xFFF472B6))
+
+                        // 4. Hazards
+                        for (hazard in state.hazards) {
+                            drawHazard(hazard, scaleX, scaleY)
                         }
-                    },
-                    containerColor = Color(0xFF1E1035)
+
+                        // 5. Exit Portal / Mattress
+                        drawExitPortal(state.portal, scaleX, scaleY)
+
+                        // 6. Buddy
+                        drawBuddy(state.buddy, scaleX, scaleY)
+
+                        // 7. Swipe slash trail
+                        if (swipeTrail.size >= 2) {
+                            for (i in 0 until swipeTrail.size - 1) {
+                                val alpha = (i.toFloat() / swipeTrail.size).coerceIn(0.2f, 0.9f)
+                                drawLine(
+                                    color = Color(0xFFE879F9).copy(alpha = alpha),
+                                    start = swipeTrail[i],
+                                    end = swipeTrail[i + 1],
+                                    strokeWidth = 5f,
+                                    cap = StrokeCap.Round
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Powerups Bottom Action Bar
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFF0F172A))
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Button(
+                        onClick = { viewModel.useHint() },
+                        enabled = state.phase == FrenzyGamePhase.PLAYING && state.hintsRemaining > 0,
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF7E22CE)
+                        ),
+                        modifier = Modifier.testTag("funfrenzy_hint_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Lightbulb,
+                            contentDescription = null,
+                            tint = Color(0xFFFBBF24),
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Hint (${state.hintsRemaining})",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+
+                    Button(
+                        onClick = { viewModel.useExtraTime() },
+                        enabled = state.phase == FrenzyGamePhase.PLAYING && !state.extraTimeUsed,
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF059669)
+                        ),
+                        modifier = Modifier.testTag("funfrenzy_extra_time_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Timer,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "+10s Time",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
+            }
+
+            // Outcome: WON
+            AnimatedVisibility(
+                visible = state.phase == FrenzyGamePhase.WON,
+                enter = fadeIn() + scaleIn(),
+                exit = fadeOut(),
+                modifier = Modifier.align(Alignment.Center)
+            ) {
+                FrenzyOutcomeDialog(
+                    isVictory = true,
+                    stars = state.stars,
+                    title = "Buddy Rescued!",
+                    subtitle = "Safe landing! Swift thinking and precise cuts.",
+                    primaryText = "Next Level",
+                    onPrimary = { viewModel.nextLevel() },
+                    secondaryText = "Replay",
+                    onSecondary = { viewModel.restartLevel() }
+                )
+            }
+
+            // Outcome: LOST
+            AnimatedVisibility(
+                visible = state.phase == FrenzyGamePhase.LOST,
+                enter = fadeIn() + scaleIn(),
+                exit = fadeOut(),
+                modifier = Modifier.align(Alignment.Center)
+            ) {
+                FrenzyOutcomeDialog(
+                    isVictory = false,
+                    stars = 0,
+                    title = "Mission Failed!",
+                    subtitle = "Buddy hit a hazard or time ran out. Cut ropes in the right order!",
+                    primaryText = "Try Again",
+                    onPrimary = { viewModel.restartLevel() },
+                    secondaryText = "Back to Menu",
+                    onSecondary = onNavigateBack
                 )
             }
         }
     }
 }
 
-// 1. TAP RUSH VIEW
 @Composable
-fun TapRushView(currentTaps: Int, requiredTaps: Int, onTap: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+private fun FrenzyOutcomeDialog(
+    isVictory: Boolean,
+    stars: Int,
+    title: String,
+    subtitle: String,
+    primaryText: String,
+    onPrimary: () -> Unit,
+    secondaryText: String,
+    onSecondary: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth(0.85f)
+            .testTag(if (isVictory) "funfrenzy_win_dialog" else "funfrenzy_loss_dialog"),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF1E293B)
+        ),
+        elevation = CardDefaults.cardElevation(12.dp)
     ) {
-        Text(
-            text = "$currentTaps / $requiredTaps",
-            style = MaterialTheme.typography.displayMedium.copy(fontWeight = FontWeight.Black),
-            color = Color(0xFFFBBF24)
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        Box(
-            modifier = Modifier
-                .size(160.dp)
-                .clip(CircleShape)
-                .background(
-                    Brush.radialGradient(
-                        listOf(Color(0xFFEC4899), Color(0xFFBE185D))
-                    )
-                )
-                .border(4.dp, Color(0xFFF472B6), CircleShape)
-                .clickable { onTap() },
-            contentAlignment = Alignment.Center
+        Column(
+            modifier = Modifier.padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "TAP!",
-                style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Black),
-                color = Color.White
-            )
-        }
-    }
-}
-
-// 2. CATCH FALLING VIEW
-@Composable
-fun CatchFallingView(bucketX: Float, gemX: Float, gemY: Float, onBucketMove: (Float) -> Unit) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .pointerInput(Unit) {
-                detectDragGestures { change, _ ->
-                    change.consume()
-                    onBucketMove(change.position.x / size.width)
-                }
-            }
-    ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val w = size.width
-            val h = size.height
-
-            // Falling Gem
-            drawCircle(
-                color = Color(0xFF38BDF8),
-                radius = 18.dp.toPx(),
-                center = Offset(gemX * w, gemY * h)
-            )
-            drawCircle(
-                color = Color.White,
-                radius = 6.dp.toPx(),
-                center = Offset(gemX * w - 4.dp.toPx(), gemY * h - 4.dp.toPx())
+                text = title,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (isVictory) Color(0xFFC084FC) else Color(0xFFEF4444)
             )
 
-            // Bucket Basket at y = 0.85
-            val bx = bucketX * w
-            val by = 0.85f * h
-            drawRoundRect(
-                color = Color(0xFFF59E0B),
-                topLeft = Offset(bx - 36.dp.toPx(), by),
-                size = Size(72.dp.toPx(), 24.dp.toPx()),
-                cornerRadius = androidx.compose.ui.geometry.CornerRadius(8.dp.toPx(), 8.dp.toPx())
-            )
-        }
-    }
-}
+            Spacer(modifier = Modifier.height(10.dp))
 
-// 3. POP BALLOONS VIEW
-@Composable
-fun PopBalloonsView(
-    balloons: List<com.example.funfrenzy.core.model.BalloonItem>,
-    poppedCount: Int,
-    requiredPops: Int,
-    onPop: (Int) -> Unit
-) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        for (b in balloons) {
-            if (!b.isPopped) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(
-                            start = (b.x * 280).dp,
-                            top = (b.y * 360).dp
-                        )
+            if (isVictory) {
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(64.dp)
-                            .clip(CircleShape)
-                            .background(b.color)
-                            .border(2.dp, Color.White.copy(alpha = 0.5f), CircleShape)
-                            .clickable { onPop(b.id) },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("POP", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    repeat(3) { index ->
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = null,
+                            tint = if (index < stars) Color(0xFFFBBF24) else Color(0xFF475569),
+                            modifier = Modifier
+                                .size(36.dp)
+                                .padding(horizontal = 4.dp)
+                        )
                     }
                 }
-            }
-        }
-    }
-}
-
-// 4. DODGE ROCKS VIEW
-@Composable
-fun DodgeRocksView(
-    playerX: Float,
-    rocks: List<com.example.funfrenzy.core.model.RockItem>,
-    onPlayerMove: (Float) -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .pointerInput(Unit) {
-                detectDragGestures { change, _ ->
-                    change.consume()
-                    onPlayerMove(change.position.x / size.width)
-                }
-            }
-    ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val w = size.width
-            val h = size.height
-
-            // Rocks
-            for (r in rocks) {
-                drawCircle(
-                    color = Color(0xFFEF4444),
-                    radius = 16.dp.toPx(),
-                    center = Offset(r.x * w, r.y * h)
-                )
+                Spacer(modifier = Modifier.height(10.dp))
             }
 
-            // Player character at y = 0.85
-            val px = playerX * w
-            val py = 0.85f * h
-            drawCircle(
-                color = Color(0xFF22C55E),
-                radius = 20.dp.toPx(),
-                center = Offset(px, py)
-            )
-            // Eyes
-            drawCircle(
-                color = Color.White,
-                radius = 4.dp.toPx(),
-                center = Offset(px - 6.dp.toPx(), py - 4.dp.toPx())
-            )
-            drawCircle(
-                color = Color.White,
-                radius = 4.dp.toPx(),
-                center = Offset(px + 6.dp.toPx(), py - 4.dp.toPx())
-            )
-        }
-    }
-}
-
-// 5. STOP NEEDLE VIEW
-@Composable
-fun StopNeedleView(needleAngle: Float, targetStart: Float, targetEnd: Float, onStop: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Canvas(modifier = Modifier.size(220.dp)) {
-            val center = Offset(size.width / 2, size.height / 2)
-            val radius = size.width / 2 - 20.dp.toPx()
-
-            // Dial Background Track
-            drawCircle(
-                color = Color(0xFF261447),
-                radius = radius,
-                style = Stroke(width = 24.dp.toPx())
+            Text(
+                text = subtitle,
+                fontSize = 14.sp,
+                color = Color(0xFF94A3B8),
+                textAlign = TextAlign.Center
             )
 
-            // Target Arc in Green
-            drawArc(
-                color = Color(0xFF22C55E),
-                startAngle = targetStart,
-                sweepAngle = targetEnd - targetStart,
-                useCenter = false,
-                topLeft = Offset(center.x - radius, center.y - radius),
-                size = Size(radius * 2, radius * 2),
-                style = Stroke(width = 24.dp.toPx(), cap = StrokeCap.Round)
-            )
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Rotating Needle
-            val rad = Math.toRadians(needleAngle.toDouble())
-            val needleEnd = Offset(
-                (center.x + cos(rad) * (radius - 10.dp.toPx())).toFloat(),
-                (center.y + sin(rad) * (radius - 10.dp.toPx())).toFloat()
-            )
-            drawLine(
-                color = Color(0xFFEF4444),
-                start = center,
-                end = needleEnd,
-                strokeWidth = 6.dp.toPx(),
-                cap = StrokeCap.Round
-            )
-            drawCircle(color = Color.White, radius = 10.dp.toPx(), center = center)
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Button(
-            onClick = onStop,
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF22C55E)),
-            shape = RoundedCornerShape(14.dp),
-            modifier = Modifier.size(width = 160.dp, height = 50.dp)
-        ) {
-            Text("STOP!", fontWeight = FontWeight.Black, fontSize = 18.sp, color = Color(0xFF0F240F))
-        }
-    }
-}
-
-// 6. CUT WIRE VIEW
-@Composable
-fun CutWireView(
-    wires: List<com.example.funfrenzy.core.model.WireItem>,
-    targetColorName: String,
-    onCut: (String) -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "TARGET: $targetColorName WIRE",
-            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black),
-            color = Color.White
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-
-        wires.forEach { wire ->
-            Box(
+            Button(
+                onClick = onPrimary,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp)
-                    .padding(vertical = 6.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(wire.color)
-                    .clickable { onCut(wire.colorName) },
-                contentAlignment = Alignment.Center
+                    .height(48.dp)
+                    .testTag("funfrenzy_dialog_primary"),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isVictory) Color(0xFF9333EA) else Color(0xFFDC2626)
+                )
             ) {
                 Text(
-                    text = "SNIP ${wire.colorName}",
-                    fontWeight = FontWeight.Black,
-                    color = Color.White,
-                    fontSize = 14.sp
+                    text = primaryText,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedButton(
+                onClick = onSecondary,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .testTag("funfrenzy_dialog_secondary"),
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                Text(
+                    text = secondaryText,
+                    color = Color(0xFF94A3B8)
                 )
             }
         }
     }
 }
 
-// 7. FIND ODD ONE VIEW
-@Composable
-fun FindOddOneView(
-    totalItems: Int,
-    oddIndex: Int,
-    normalSym: String,
-    oddSym: String,
-    selectedIndex: Int?,
-    onSelect: (Int) -> Unit
-) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        for (row in 0 until 3) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.padding(vertical = 8.dp)
-            ) {
-                for (col in 0 until 3) {
-                    val idx = row * 3 + col
-                    val isOdd = idx == oddIndex
-                    val symbol = if (isOdd) oddSym else normalSym
+private fun DrawScope.drawCavernBackground() {
+    drawRect(
+        brush = Brush.verticalGradient(
+            listOf(Color(0xFF0F0E1A), Color(0xFF1B192A))
+        )
+    )
+}
 
-                    Box(
-                        modifier = Modifier
-                            .size(72.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(Color(0xFF261447))
-                            .border(2.dp, Color(0xFF6D28D9), RoundedCornerShape(16.dp))
-                            .clickable { onSelect(idx) },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = symbol,
-                            fontSize = 32.sp
-                        )
-                    }
+private fun DrawScope.drawAnchor(anchor: RopeAnchor, scaleX: Float, scaleY: Float) {
+    val cx = anchor.x * scaleX
+    val cy = anchor.y * scaleY
+
+    // Swivel ring
+    drawCircle(color = Color(0xFF475569), radius = 10f * scaleX, center = Offset(cx, cy))
+    drawCircle(color = Color(0xFF0F172A), radius = 5f * scaleX, center = Offset(cx, cy))
+}
+
+private fun DrawScope.drawRope(
+    anchor: RopeAnchor,
+    buddy: RescueBuddy,
+    rope: RescueRope,
+    isHinted: Boolean,
+    scaleX: Float,
+    scaleY: Float
+) {
+    if (rope.isCut) return
+
+    val start = Offset(anchor.x * scaleX, anchor.y * scaleY)
+    val end = Offset(buddy.x * scaleX, buddy.y * scaleY)
+
+    val color = if (isHinted) Color(0xFF34D399) else Color(0xFFD97706)
+    val width = if (isHinted) 6f * scaleX else 4f * scaleX
+
+    drawLine(
+        color = color,
+        start = start,
+        end = end,
+        strokeWidth = width,
+        cap = StrokeCap.Round
+    )
+
+    if (isHinted) {
+        // Glowing hint pulse
+        drawLine(
+            color = Color.White.copy(alpha = 0.6f),
+            start = start,
+            end = end,
+            strokeWidth = 2f * scaleX,
+            cap = StrokeCap.Round
+        )
+    }
+}
+
+private fun DrawScope.drawBuddy(buddy: RescueBuddy, scaleX: Float, scaleY: Float) {
+    val cx = buddy.x * scaleX
+    val cy = buddy.y * scaleY
+    val r = buddy.radius * scaleX
+
+    if (buddy.isDead) {
+        drawCircle(color = Color(0xFFEF4444).copy(alpha = 0.6f), radius = r, center = Offset(cx, cy))
+        return
+    }
+
+    // Body (cute blue/purple round buddy)
+    drawCircle(color = Color(0xFF8B5CF6), radius = r, center = Offset(cx, cy))
+
+    // Expressive Eyes
+    val eyeOffset = 6f * scaleX
+    val eyeY = cy - 4f * scaleY
+    drawCircle(color = Color.White, radius = 6f * scaleX, center = Offset(cx - eyeOffset, eyeY))
+    drawCircle(color = Color.White, radius = 6f * scaleX, center = Offset(cx + eyeOffset, eyeY))
+    drawCircle(color = Color.Black, radius = 3f * scaleX, center = Offset(cx - eyeOffset, eyeY))
+    drawCircle(color = Color.Black, radius = 3f * scaleX, center = Offset(cx + eyeOffset, eyeY))
+
+    // Cheerful or shocked mouth
+    drawCircle(color = Color(0xFF6D28D9), radius = 3f * scaleX, center = Offset(cx, cy + 6f * scaleY))
+}
+
+private fun DrawScope.drawHazard(hazard: FrenzyHazard, scaleX: Float, scaleY: Float) {
+    val b = hazard.bounds
+    val left = b.left * scaleX
+    val top = b.top * scaleY
+    val right = b.right * scaleX
+    val bottom = b.bottom * scaleY
+    val w = right - left
+    val h = bottom - top
+
+    when (hazard.type) {
+        FrenzyHazardType.SPIKES -> {
+            val spikeCount = (w / 18f).toInt().coerceAtLeast(2)
+            val spikeWidth = w / spikeCount
+
+            val path = Path().apply {
+                moveTo(left, bottom)
+                for (i in 0 until spikeCount) {
+                    val sx = left + i * spikeWidth
+                    lineTo(sx + spikeWidth * 0.5f, top)
+                    lineTo(sx + spikeWidth, bottom)
                 }
+                close()
             }
+            drawPath(path, color = Color(0xFFEF4444))
+        }
+        FrenzyHazardType.SAWBLADE -> {
+            val cx = (left + right) / 2f
+            val cy = (top + bottom) / 2f
+            val r = (w.coerceAtMost(h)) / 2f
+
+            drawCircle(color = Color(0xFF94A3B8), radius = r, center = Offset(cx, cy))
+            drawCircle(color = Color(0xFFE2E8F0), radius = r * 0.7f, center = Offset(cx, cy))
+            drawCircle(color = Color(0xFF1E293B), radius = r * 0.25f, center = Offset(cx, cy))
+        }
+        FrenzyHazardType.LAVA_PIT -> {
+            drawRect(
+                brush = Brush.verticalGradient(
+                    listOf(Color(0xFFEA580C), Color(0xFFDC2626))
+                ),
+                topLeft = Offset(left, top),
+                size = androidx.compose.ui.geometry.Size(w, h)
+            )
         }
     }
+}
+
+private fun DrawScope.drawExitPortal(portal: ExitPortal, scaleX: Float, scaleY: Float) {
+    val b = portal.bounds
+    val left = b.left * scaleX
+    val top = b.top * scaleY
+    val w = (b.right - b.left) * scaleX
+    val h = (b.bottom - b.top) * scaleY
+
+    // Safety Mattress
+    drawRoundRect(
+        color = Color(0xFF10B981),
+        topLeft = Offset(left, top),
+        size = androidx.compose.ui.geometry.Size(w, h),
+        cornerRadius = androidx.compose.ui.geometry.CornerRadius(10f, 10f)
+    )
+
+    // Inner bright zone
+    drawRoundRect(
+        color = Color(0xFF34D399),
+        topLeft = Offset(left + 6f, top + 4f),
+        size = androidx.compose.ui.geometry.Size(w - 12f, h - 8f),
+        cornerRadius = androidx.compose.ui.geometry.CornerRadius(6f, 6f)
+    )
 }

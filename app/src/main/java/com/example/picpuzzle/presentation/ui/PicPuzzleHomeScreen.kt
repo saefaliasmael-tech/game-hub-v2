@@ -70,6 +70,13 @@ fun PicPuzzleHomeScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF1F2421))
             )
         },
+        bottomBar = {
+            com.zubaluba.gamehub.ads.AdBanner(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+            )
+        },
         containerColor = Color(0xFF141815)
     ) { paddingValues ->
         Column(

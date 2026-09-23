@@ -3,25 +3,52 @@ package com.example.mrbullet.presentation.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.VolumeOff
+import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.mrbullet.core.level.MrBulletLevelManager
 import com.example.mrbullet.presentation.MrBulletViewModel
 
@@ -32,181 +59,243 @@ fun MrBulletHomeScreen(
     onNavigateBack: () -> Unit,
     onStartLevel: (Int) -> Unit
 ) {
-    val completedLevels by viewModel.completedLevelsFlow.collectAsState(initial = 0)
-    val highestUnlocked by viewModel.highestLevelFlow.collectAsState()
+    val completedCount by viewModel.completedLevelsFlow.collectAsState(initial = 0)
     val progressList by viewModel.progressFlow.collectAsState(initial = emptyList())
+    val soundEnabled by viewModel.soundEnabledFlow.collectAsState()
 
     val progressMap = remember(progressList) {
         progressList.associateBy { it.levelId }
+    }
+
+    val totalStars = remember(progressList) {
+        progressList.sumOf { it.stars }
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Column {
-                        Text(
-                            text = "Mr Bullet",
-                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                            color = Color.White
-                        )
-                        Text(
-                            text = "Spy Ricochet Puzzle",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.White.copy(alpha = 0.7f)
-                        )
-                    }
+                    Text(
+                        text = "Mr Bullet",
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFF1F5F9)
+                    )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
+                    IconButton(
+                        onClick = onNavigateBack,
+                        modifier = Modifier.testTag("mrbullet_back_button")
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = Color.White
+                            tint = Color(0xFFF1F5F9)
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF1E293B))
+                actions = {
+                    IconButton(
+                        onClick = { viewModel.toggleSound() },
+                        modifier = Modifier.testTag("mrbullet_sound_toggle")
+                    ) {
+                        Icon(
+                            imageVector = if (soundEnabled) Icons.Default.VolumeUp else Icons.Default.VolumeOff,
+                            contentDescription = "Sound",
+                            tint = Color(0xFFEF4444)
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFF0F172A)
+                )
             )
         },
+        bottomBar = {
+            com.zubaluba.gamehub.ads.AdBanner(modifier = Modifier.fillMaxWidth())
+        },
         containerColor = Color(0xFF0F172A)
-    ) { paddingValues ->
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Quick Play Hero Card
+            // Stats Hero Banner
             Card(
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(
-                        1.dp,
-                        Brush.horizontalGradient(listOf(Color(0xFFEF4444), Color(0xFFF59E0B))),
-                        RoundedCornerShape(20.dp)
-                    )
+                    .testTag("mrbullet_stats_card"),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFF1E293B)
+                )
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceAround,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "Mission $highestUnlocked",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "$completedLevels / ${MrBulletLevelManager.MAX_LEVELS} Targets Eliminated",
-                            style = MaterialTheme.typography.bodySmall,
+                            text = "$completedCount / ${MrBulletLevelManager.TOTAL_LEVELS}",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
                             color = Color(0xFFEF4444)
+                        )
+                        Text(
+                            text = "Missions Solved",
+                            fontSize = 12.sp,
+                            color = Color(0xFF94A3B8)
                         )
                     }
 
-                    Button(
-                        onClick = { onStartLevel(highestUnlocked.coerceAtMost(MrBulletLevelManager.MAX_LEVELS)) },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF4444)),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color.White)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("PLAY", fontWeight = FontWeight.Bold, color = Color.White)
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .height(40.dp)
+                            .background(Color(0xFF334155))
+                    )
+
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = null,
+                                tint = Color(0xFFFBBF24),
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "$totalStars",
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFFBBF24)
+                            )
+                        }
+                        Text(
+                            text = "Stars Earned",
+                            fontSize = 12.sp,
+                            color = Color(0xFF94A3B8)
+                        )
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            val nextLevel = (completedCount + 1).coerceAtMost(MrBulletLevelManager.TOTAL_LEVELS)
+            Button(
+                onClick = { onStartLevel(nextLevel) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(54.dp)
+                    .testTag("mrbullet_play_next_button"),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFDC2626)
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = null,
+                    tint = Color.White
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Play Mission $nextLevel",
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             Text(
-                text = "Sniper Missions",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = Color.White
+                text = "Select Mission (1 - 100)",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF94A3B8),
+                modifier = Modifier.align(Alignment.Start)
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // 100 Levels Grid
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(minSize = 64.dp),
-                modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.weight(1f)
             ) {
-                items((1..MrBulletLevelManager.MAX_LEVELS).toList()) { levelNum ->
-                    val isUnlocked = levelNum <= highestUnlocked
-                    val progress = progressMap[levelNum]
-                    val isCompleted = progress?.isCompleted == true
-                    val stars = progress?.stars ?: 0
+                items(MrBulletLevelManager.TOTAL_LEVELS) { index ->
+                    val levelNum = index + 1
+                    val entity = progressMap[levelNum]
+                    val isUnlocked = levelNum == 1 || (entity?.isUnlocked == true) || levelNum <= (completedCount + 1)
+                    val isCompleted = entity?.isCompleted == true
+                    val stars = entity?.stars ?: 0
+
+                    val bgBrush = when {
+                        isCompleted -> Brush.verticalGradient(listOf(Color(0xFF991B1B), Color(0xFF7F1D1D)))
+                        isUnlocked -> Brush.verticalGradient(listOf(Color(0xFF1E293B), Color(0xFF0F172A)))
+                        else -> Brush.verticalGradient(listOf(Color(0xFF1E293B).copy(alpha = 0.4f), Color(0xFF0F172A).copy(alpha = 0.4f)))
+                    }
 
                     Box(
                         modifier = Modifier
-                            .aspectRatio(1f)
+                            .size(64.dp)
                             .clip(RoundedCornerShape(14.dp))
-                            .background(
-                                when {
-                                    isCompleted -> Color(0xFF334155)
-                                    isUnlocked -> Color(0xFF1E293B)
-                                    else -> Color(0xFF0F172A).copy(alpha = 0.6f)
-                                }
-                            )
+                            .background(bgBrush)
                             .border(
-                                width = if (levelNum == highestUnlocked) 2.dp else 1.dp,
-                                color = when {
-                                    levelNum == highestUnlocked -> Color(0xFFEF4444)
-                                    isCompleted -> Color(0xFFF59E0B)
-                                    isUnlocked -> Color(0xFF475569)
-                                    else -> Color(0xFF1E293B)
-                                },
+                                width = if (isCompleted) 1.5.dp else 1.dp,
+                                color = if (isCompleted) Color(0xFFEF4444) else if (isUnlocked) Color(0xFF334155) else Color(0xFF1E293B),
                                 shape = RoundedCornerShape(14.dp)
                             )
-                            .clickable(enabled = isUnlocked) {
-                                onStartLevel(levelNum)
-                            },
+                            .clickable(enabled = isUnlocked) { onStartLevel(levelNum) }
+                            .testTag("mrbullet_level_$levelNum"),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (isUnlocked) {
+                        if (!isUnlocked) {
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = "Locked",
+                                tint = Color(0xFF475569),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        } else {
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
                                 Text(
                                     text = "$levelNum",
-                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                    color = if (isCompleted) Color(0xFFF59E0B) else Color.White
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isCompleted) Color.White else Color(0xFFE2E8F0)
                                 )
-                                if (isCompleted) {
+
+                                if (isCompleted && stars > 0) {
                                     Row(
                                         horizontalArrangement = Arrangement.Center,
-                                        modifier = Modifier.padding(top = 2.dp)
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        repeat(stars.coerceAtLeast(1)) {
+                                        repeat(3) { starIndex ->
                                             Icon(
                                                 imageVector = Icons.Default.Star,
                                                 contentDescription = null,
-                                                tint = Color(0xFFFFD166),
+                                                tint = if (starIndex < stars) Color(0xFFFBBF24) else Color(0xFF475569),
                                                 modifier = Modifier.size(10.dp)
                                             )
                                         }
                                     }
                                 }
                             }
-                        } else {
-                            Icon(
-                                imageVector = Icons.Default.Lock,
-                                contentDescription = "Locked",
-                                tint = Color(0xFF475569),
-                                modifier = Modifier.size(18.dp)
-                            )
                         }
                     }
                 }

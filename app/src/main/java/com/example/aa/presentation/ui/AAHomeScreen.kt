@@ -73,6 +73,13 @@ fun AAHomeScreen(
                 )
             )
         },
+        bottomBar = {
+            com.zubaluba.gamehub.ads.AdBanner(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+            )
+        },
         containerColor = Color(0xFF11111B)
     ) { paddingValues ->
         Column(

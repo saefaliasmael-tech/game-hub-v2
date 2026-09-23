@@ -27,9 +27,9 @@ class HappyGlassRepository(
         const val TOTAL_LEVELS = 100
         private const val PREFS_NAME = "happy_glass_prefs"
 
-        private const val KEY_SOUND = "hg_sound_enabled"
-        private const val KEY_HAPTIC = "hg_haptic_enabled"
-        private const val KEY_HIGHEST_LEVEL = "hg_highest_level"
+        private const val KEY_SOUND = "glass_sound_enabled"
+        private const val KEY_HAPTIC = "glass_haptic_enabled"
+        private const val KEY_HIGHEST_LEVEL = "glass_highest_level"
     }
 
     private val prefs: SharedPreferences? = context?.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -46,14 +46,14 @@ class HappyGlassRepository(
     val progressFlow: Flow<List<GameProgressEntity>> = progressDao.getProgressForGame(GAME_ID)
     val completedLevelsFlow: Flow<Int> = progressDao.getCompletedLevelsCount(GAME_ID)
 
-    suspend fun saveLevelCompletion(levelId: Int, stars: Int, score: Int = 100) = withContext(Dispatchers.IO) {
+    suspend fun saveLevelCompletion(levelId: Int, dropsCollected: Int, stars: Int = 3) = withContext(Dispatchers.IO) {
         val entity = GameProgressEntity(
             gameId = GAME_ID,
             levelId = levelId,
             isUnlocked = true,
             isCompleted = true,
             stars = stars,
-            bestScore = score,
+            bestScore = dropsCollected,
             updatedAt = System.currentTimeMillis()
         )
         progressDao.saveProgress(entity)
@@ -71,9 +71,12 @@ class HappyGlassRepository(
             progressDao.saveProgress(nextLevel)
         }
 
-        val newHighest = max(_highestLevelFlow.value, levelId + 1)
-        _highestLevelFlow.value = newHighest
-        prefs?.edit()?.putInt(KEY_HIGHEST_LEVEL, newHighest)?.apply()
+        val currentHighest = _highestLevelFlow.value
+        if (levelId >= currentHighest && levelId < TOTAL_LEVELS) {
+            val newHighest = levelId + 1
+            _highestLevelFlow.value = newHighest
+            prefs?.edit()?.putInt(KEY_HIGHEST_LEVEL, newHighest)?.apply()
+        }
     }
 
     fun setSoundEnabled(enabled: Boolean) {

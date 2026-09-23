@@ -50,6 +50,19 @@ fun GameArtwork(
                 GameRegistry.MR_BULLET_ID -> drawMrBulletArt(this)
                 GameRegistry.PROTECT_SHEEP_ID -> drawProtectSheepArt(this)
                 GameRegistry.FUN_FRENZY_ID -> drawFunFrenzyArt(this)
+                GameRegistry.APPLE_WORM_ID -> drawAppleWormArt(this)
+                GameRegistry.HELIX_JUMP_ID -> drawHelixJumpArt(this)
+                GameRegistry.COLOR_MAZE_3D_ID -> drawColorMaze3DArt(this)
+                GameRegistry.SAND_LOOP_ID -> drawSandLoopArt(this)
+                GameRegistry.WOODTURNING_ID -> drawWoodturningArt(this)
+                GameRegistry.DOODLE_JUMP_ID -> drawDoodleJumpArt(this)
+                GameRegistry.TOMB_OF_THE_MASK_ID -> drawTombOfTheMaskArt(this)
+                GameRegistry.CROSSY_ROAD_ID -> drawCrossyRoadArt(this)
+                GameRegistry.PAPER_IO_2_ID -> drawPaperIo2Art(this)
+                GameRegistry.HOLE_IO_ID -> drawHoleIoArt(this)
+                GameRegistry.SEA_BATTLE_2_ID -> drawSeaBattle2Art(this)
+                GameRegistry.IQ_BOOST_ID -> drawIQBoostArt(this)
+                GameRegistry.BALL_GUYS_ID -> drawBallGuysArt(this)
                 else -> drawGenericPortalArt(this)
             }
         }
@@ -673,6 +686,311 @@ private fun drawFunFrenzyArt(scope: DrawScope) {
         radius = scope.size.width * 0.12f,
         center = Offset(cx, cy)
     )
+}
+
+// 20. Apple Worm: Green bendy worm eating red apple
+private fun drawAppleWormArt(scope: DrawScope) {
+    val cx = scope.size.width * 0.5f
+    val cy = scope.size.height * 0.5f
+    val r = scope.size.width * 0.12f
+
+    // Red Apple
+    scope.drawCircle(Color(0xFFE53935), r * 1.3f, Offset(cx + r * 1.2f, cy))
+    scope.drawCircle(Color(0xFF4CAF50), r * 0.4f, Offset(cx + r * 1.2f, cy - r * 1.2f))
+
+    // Worm segments
+    val wormGreen = Color(0xFF66BB6A)
+    scope.drawCircle(wormGreen, r, Offset(cx - r * 1.8f, cy + r * 0.6f))
+    scope.drawCircle(wormGreen, r, Offset(cx - r * 0.8f, cy + r * 0.6f))
+    scope.drawCircle(wormGreen, r * 1.2f, Offset(cx + r * 0.2f, cy))
+    // Worm eye
+    scope.drawCircle(Color.White, r * 0.45f, Offset(cx + r * 0.35f, cy - r * 0.4f))
+    scope.drawCircle(Color.Black, r * 0.25f, Offset(cx + r * 0.45f, cy - r * 0.4f))
+}
+
+// 21. Helix Jump: Spiral column with bouncing ball
+private fun drawHelixJumpArt(scope: DrawScope) {
+    val cx = scope.size.width * 0.5f
+    val cy = scope.size.height * 0.5f
+    val w = scope.size.width
+
+    // Central Pillar
+    scope.drawRoundRect(
+        color = Color(0xFF37474F),
+        topLeft = Offset(cx - w * 0.1f, cy - w * 0.4f),
+        size = Size(w * 0.2f, w * 0.8f),
+        cornerRadius = CornerRadius(w * 0.05f, w * 0.05f)
+    )
+    // Helix plates
+    scope.drawRoundRect(
+        color = Color(0xFFFF9800),
+        topLeft = Offset(cx - w * 0.35f, cy - w * 0.15f),
+        size = Size(w * 0.32f, w * 0.08f),
+        cornerRadius = CornerRadius(w * 0.03f, w * 0.03f)
+    )
+    scope.drawRoundRect(
+        color = Color(0xFFFF9800),
+        topLeft = Offset(cx + w * 0.05f, cy + w * 0.15f),
+        size = Size(w * 0.32f, w * 0.08f),
+        cornerRadius = CornerRadius(w * 0.03f, w * 0.03f)
+    )
+    // Red danger zone
+    scope.drawRoundRect(
+        color = Color(0xFFE53935),
+        topLeft = Offset(cx - w * 0.35f, cy + w * 0.15f),
+        size = Size(w * 0.18f, w * 0.08f),
+        cornerRadius = CornerRadius(w * 0.03f, w * 0.03f)
+    )
+    // Bouncing sphere
+    scope.drawCircle(Color(0xFFFFD54F), w * 0.09f, Offset(cx + w * 0.18f, cy - w * 0.05f))
+}
+
+// 22. Color Maze 3D: Colorful sponge roller trail
+private fun drawColorMaze3DArt(scope: DrawScope) {
+    val cx = scope.size.width * 0.5f
+    val cy = scope.size.height * 0.5f
+    val w = scope.size.width
+
+    // Maze floor trails
+    scope.drawRoundRect(
+        color = Color(0xFFFF007F),
+        topLeft = Offset(cx - w * 0.35f, cy - w * 0.35f),
+        size = Size(w * 0.7f, w * 0.2f),
+        cornerRadius = CornerRadius(w * 0.04f, w * 0.04f)
+    )
+    scope.drawRoundRect(
+        color = Color(0xFFFF007F),
+        topLeft = Offset(cx + w * 0.15f, cy - w * 0.35f),
+        size = Size(w * 0.2f, w * 0.7f),
+        cornerRadius = CornerRadius(w * 0.04f, w * 0.04f)
+    )
+    // Paint cube
+    scope.drawRoundRect(
+        color = Color(0xFF00E5FF),
+        topLeft = Offset(cx + w * 0.13f, cy + w * 0.13f),
+        size = Size(w * 0.24f, w * 0.24f),
+        cornerRadius = CornerRadius(w * 0.06f, w * 0.06f)
+    )
+}
+
+// 23. Sand Loop: Flowing particles into loop
+private fun drawSandLoopArt(scope: DrawScope) {
+    val cx = scope.size.width * 0.5f
+    val cy = scope.size.height * 0.5f
+    val r = scope.size.width * 0.3f
+
+    // Sand loop orbit
+    scope.drawCircle(
+        color = Color(0xFFFFB703),
+        radius = r,
+        center = Offset(cx, cy),
+        style = Stroke(width = scope.size.width * 0.08f)
+    )
+    // Sand particles
+    scope.drawCircle(Color(0xFFFB8500), r * 0.3f, Offset(cx - r * 0.7f, cy - r * 0.3f))
+    scope.drawCircle(Color(0xFF219EBC), r * 0.3f, Offset(cx + r * 0.7f, cy + r * 0.3f))
+}
+
+// 24. Woodturning: Carved wood vase profile
+private fun drawWoodturningArt(scope: DrawScope) {
+    val cx = scope.size.width * 0.5f
+    val cy = scope.size.height * 0.5f
+    val w = scope.size.width
+
+    // Wood lathe piece
+    scope.drawRoundRect(
+        color = Color(0xFFD4A373),
+        topLeft = Offset(cx - w * 0.35f, cy - w * 0.15f),
+        size = Size(w * 0.7f, w * 0.3f),
+        cornerRadius = CornerRadius(w * 0.15f, w * 0.15f)
+    )
+    scope.drawCircle(Color(0xFFBC6C25), w * 0.18f, Offset(cx, cy))
+    // Metal chisel
+    scope.drawRoundRect(
+        color = Color(0xFF90A4AE),
+        topLeft = Offset(cx + w * 0.1f, cy - w * 0.35f),
+        size = Size(w * 0.08f, w * 0.35f),
+        cornerRadius = CornerRadius(w * 0.02f, w * 0.02f)
+    )
+}
+
+// 25. Doodle Jump: Green bouncy character
+private fun drawDoodleJumpArt(scope: DrawScope) {
+    val cx = scope.size.width * 0.5f
+    val cy = scope.size.height * 0.5f
+    val r = scope.size.width * 0.16f
+
+    // Platform
+    scope.drawRoundRect(
+        color = Color(0xFF43A047),
+        topLeft = Offset(cx - r * 1.5f, cy + r * 1.2f),
+        size = Size(r * 3f, r * 0.4f),
+        cornerRadius = CornerRadius(r * 0.2f, r * 0.2f)
+    )
+    // Doodler Body
+    scope.drawCircle(Color(0xFF8BC34A), r, Offset(cx, cy))
+    // Snout
+    scope.drawRoundRect(
+        color = Color(0xFF7CB342),
+        topLeft = Offset(cx + r * 0.4f, cy - r * 0.2f),
+        size = Size(r * 0.8f, r * 0.4f),
+        cornerRadius = CornerRadius(r * 0.2f, r * 0.2f)
+    )
+    // Eye
+    scope.drawCircle(Color.White, r * 0.3f, Offset(cx + r * 0.2f, cy - r * 0.3f))
+    scope.drawCircle(Color.Black, r * 0.15f, Offset(cx + r * 0.25f, cy - r * 0.3f))
+}
+
+// 26. Tomb of the Mask: Golden mask with neon glow
+private fun drawTombOfTheMaskArt(scope: DrawScope) {
+    val cx = scope.size.width * 0.5f
+    val cy = scope.size.height * 0.5f
+    val s = scope.size.width * 0.35f
+
+    // Neon trail
+    scope.drawRoundRect(
+        color = Color(0xFF3A0CA3),
+        topLeft = Offset(cx - s * 0.8f, cy - s * 0.8f),
+        size = Size(s * 1.6f, s * 1.6f),
+        cornerRadius = CornerRadius(s * 0.2f, s * 0.2f),
+        style = Stroke(width = s * 0.15f)
+    )
+    // Golden Mask
+    scope.drawRoundRect(
+        color = Color(0xFFFFD700),
+        topLeft = Offset(cx - s * 0.5f, cy - s * 0.5f),
+        size = Size(s, s),
+        cornerRadius = CornerRadius(s * 0.15f, s * 0.15f)
+    )
+    // Slit eyes
+    scope.drawRect(Color.Black, Offset(cx - s * 0.35f, cy - s * 0.15f), Size(s * 0.25f, s * 0.12f))
+    scope.drawRect(Color.Black, Offset(cx + s * 0.1f, cy - s * 0.15f), Size(s * 0.25f, s * 0.12f))
+}
+
+// 27. Crossy Road: Blocky chicken hopper
+private fun drawCrossyRoadArt(scope: DrawScope) {
+    val cx = scope.size.width * 0.5f
+    val cy = scope.size.height * 0.5f
+    val s = scope.size.width * 0.32f
+
+    // Road lane
+    scope.drawRect(Color(0xFF37474F), Offset(cx - scope.size.width * 0.45f, cy - s * 0.6f), Size(scope.size.width * 0.9f, s * 1.2f))
+    // Chicken body
+    scope.drawRoundRect(
+        color = Color.White,
+        topLeft = Offset(cx - s * 0.4f, cy - s * 0.4f),
+        size = Size(s * 0.8f, s * 0.8f),
+        cornerRadius = CornerRadius(s * 0.15f, s * 0.15f)
+    )
+    // Comb
+    scope.drawCircle(Color(0xFFD32F2F), s * 0.15f, Offset(cx, cy - s * 0.45f))
+    // Beak
+    scope.drawRoundRect(
+        color = Color(0xFFFFC107),
+        topLeft = Offset(cx - s * 0.15f, cy + s * 0.4f),
+        size = Size(s * 0.3f, s * 0.2f),
+        cornerRadius = CornerRadius(s * 0.05f, s * 0.05f)
+    )
+}
+
+// 28. Paper.io 2: Territory ribbon loop
+private fun drawPaperIo2Art(scope: DrawScope) {
+    val cx = scope.size.width * 0.5f
+    val cy = scope.size.height * 0.5f
+    val r = scope.size.width * 0.3f
+
+    // Territory patch
+    scope.drawRoundRect(
+        color = Color(0xFF00B4D8).copy(alpha = 0.8f),
+        topLeft = Offset(cx - r, cy - r * 0.6f),
+        size = Size(r * 1.6f, r * 1.5f),
+        cornerRadius = CornerRadius(r * 0.2f, r * 0.2f)
+    )
+    // Ribbon trail
+    scope.drawRoundRect(
+        color = Color(0xFF80D8FF),
+        topLeft = Offset(cx, cy + r * 0.4f),
+        size = Size(r * 0.8f, r * 0.25f),
+        cornerRadius = CornerRadius(r * 0.05f, r * 0.05f)
+    )
+    // Cube Head
+    scope.drawRoundRect(
+        color = Color(0xFF00E5FF),
+        topLeft = Offset(cx + r * 0.55f, cy + r * 0.3f),
+        size = Size(r * 0.45f, r * 0.45f),
+        cornerRadius = CornerRadius(r * 0.1f, r * 0.1f)
+    )
+}
+
+// 29. Hole.io: Deep vortex consuming objects
+private fun drawHoleIoArt(scope: DrawScope) {
+    val cx = scope.size.width * 0.5f
+    val cy = scope.size.height * 0.5f
+    val r = scope.size.width * 0.32f
+
+    // Gravitational glow
+    scope.drawCircle(Color(0xFF00E5FF).copy(alpha = 0.3f), r * 1.25f, Offset(cx, cy))
+    // Black hole abyss
+    scope.drawCircle(Color(0xFF0F172A), r, Offset(cx, cy))
+    scope.drawCircle(Color(0xFF00E5FF), r, Offset(cx, cy), style = Stroke(width = r * 0.1f))
+    // Sinking item
+    scope.drawCircle(Color(0xFFFF9800), r * 0.25f, Offset(cx + r * 0.3f, cy - r * 0.2f))
+}
+
+// 30. Sea Battle 2: Naval grid blueprint with battleship
+private fun drawSeaBattle2Art(scope: DrawScope) {
+    val cx = scope.size.width * 0.5f
+    val cy = scope.size.height * 0.5f
+    val w = scope.size.width
+
+    // Blueprint grid
+    val cell = w * 0.15f
+    for (i in -2..2) {
+        scope.drawLine(Color(0xFF457B9D).copy(alpha = 0.4f), Offset(cx + i * cell, cy - cell * 2), Offset(cx + i * cell, cy + cell * 2), 2f)
+        scope.drawLine(Color(0xFF457B9D).copy(alpha = 0.4f), Offset(cx - cell * 2, cy + i * cell), Offset(cx + cell * 2, cy + i * cell), 2f)
+    }
+    // Battleship
+    scope.drawRoundRect(
+        color = Color(0xFF1D3557),
+        topLeft = Offset(cx - cell * 1.5f, cy - cell * 0.4f),
+        size = Size(cell * 3f, cell * 0.8f),
+        cornerRadius = CornerRadius(cell * 0.3f, cell * 0.3f)
+    )
+    // Red strike explosion
+    scope.drawCircle(Color(0xFFE63946), cell * 0.3f, Offset(cx, cy))
+}
+
+// 31. IQ Boost: Glowing brain synapse
+private fun drawIQBoostArt(scope: DrawScope) {
+    val cx = scope.size.width * 0.5f
+    val cy = scope.size.height * 0.5f
+    val r = scope.size.width * 0.28f
+
+    // Glowing cerebral lobes
+    scope.drawCircle(Color(0xFF72EFDD), r * 0.8f, Offset(cx - r * 0.4f, cy))
+    scope.drawCircle(Color(0xFF72EFDD), r * 0.8f, Offset(cx + r * 0.4f, cy))
+    // Synapse spark
+    scope.drawCircle(Color(0xFFFFD166), r * 0.35f, Offset(cx, cy))
+    scope.drawCircle(Color.White, r * 0.2f, Offset(cx, cy))
+}
+
+// 32. Ball Guys: Cute stacked merge balls
+private fun drawBallGuysArt(scope: DrawScope) {
+    val cx = scope.size.width * 0.5f
+    val cy = scope.size.height * 0.5f
+    val r = scope.size.width * 0.22f
+
+    // Big King Ball
+    scope.drawCircle(Color(0xFFFFD700), r, Offset(cx, cy + r * 0.3f))
+    // Cute eyes
+    scope.drawCircle(Color.White, r * 0.2f, Offset(cx - r * 0.35f, cy + r * 0.2f))
+    scope.drawCircle(Color.Black, r * 0.1f, Offset(cx - r * 0.35f, cy + r * 0.2f))
+    scope.drawCircle(Color.White, r * 0.2f, Offset(cx + r * 0.35f, cy + r * 0.2f))
+    scope.drawCircle(Color.Black, r * 0.1f, Offset(cx + r * 0.35f, cy + r * 0.2f))
+
+    // Small Cherry Guy on top
+    scope.drawCircle(Color(0xFFFF1744), r * 0.45f, Offset(cx - r * 0.4f, cy - r * 0.85f))
+    scope.drawCircle(Color(0xFF9C27B0), r * 0.55f, Offset(cx + r * 0.4f, cy - r * 0.75f))
 }
 
 private fun drawGenericPortalArt(scope: DrawScope) {

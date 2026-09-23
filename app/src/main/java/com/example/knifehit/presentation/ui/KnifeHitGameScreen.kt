@@ -22,12 +22,8 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
-import android.app.Activity
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.ads.AdManager
-import com.example.ads.ZubaLubaRewardedButton
 import com.example.knifehit.core.engine.KnifeHitEngine
 import com.example.knifehit.core.model.ALL_KNIFE_SKINS
 import com.example.knifehit.core.model.KnifeHitGameMode
@@ -41,7 +37,6 @@ fun KnifeHitGameScreen(
     viewModel: KnifeHitViewModel,
     onNavigateBack: () -> Unit
 ) {
-    val activity = LocalContext.current as? Activity
     val state by viewModel.gameState.collectAsState()
     val apples by viewModel.applesFlow.collectAsState()
     val equippedSkinId by viewModel.equippedSkinFlow.collectAsState()
@@ -260,35 +255,16 @@ fun KnifeHitGameScreen(
                 }
             },
             confirmButton = {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    ZubaLubaRewardedButton(
-                        rewardDescription = "+10 🍎",
-                        onRewardEarned = { _, _ -> viewModel.addBonusApples(10) },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        OutlinedButton(
-                            onClick = {
-                                AdManager.recordGameWin("knifehit", activity) {
-                                    onNavigateBack()
-                                }
-                            },
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            Text("Menu", color = Color.White)
-                        }
-                        Button(
-                            onClick = {
-                                AdManager.recordGameWin("knifehit", activity) {
-                                    viewModel.nextStage()
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981)),
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            Text("Next Stage", fontWeight = FontWeight.Bold)
-                        }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    OutlinedButton(onClick = onNavigateBack, shape = RoundedCornerShape(10.dp)) {
+                        Text("Menu", color = Color.White)
+                    }
+                    Button(
+                        onClick = { viewModel.nextStage() },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981)),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text("Next Stage", fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -313,35 +289,16 @@ fun KnifeHitGameScreen(
                 Text("Your knife hit an existing blade. Try again!", color = Color(0xFFA8A29E))
             },
             confirmButton = {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    ZubaLubaRewardedButton(
-                        rewardDescription = "+10 🍎",
-                        onRewardEarned = { _, _ -> viewModel.addBonusApples(10) },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        OutlinedButton(
-                            onClick = {
-                                AdManager.recordGameLoss("knifehit", activity) {
-                                    onNavigateBack()
-                                }
-                            },
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            Text("Menu", color = Color.White)
-                        }
-                        Button(
-                            onClick = {
-                                AdManager.recordGameLoss("knifehit", activity) {
-                                    viewModel.retryStage()
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF4444)),
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            Text("Retry", fontWeight = FontWeight.Bold)
-                        }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    OutlinedButton(onClick = onNavigateBack, shape = RoundedCornerShape(10.dp)) {
+                        Text("Menu", color = Color.White)
+                    }
+                    Button(
+                        onClick = { viewModel.retryStage() },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF4444)),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text("Retry", fontWeight = FontWeight.Bold)
                     }
                 }
             }

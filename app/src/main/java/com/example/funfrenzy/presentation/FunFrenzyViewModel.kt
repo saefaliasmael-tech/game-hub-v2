@@ -1,11 +1,16 @@
 package com.example.funfrenzy.presentation
 
+import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.funfrenzy.core.engine.FunFrenzyEngine
+import com.example.funfrenzy.core.engine.FunFrenzyPhysicsEngine
 import com.example.funfrenzy.core.level.FunFrenzyLevelManager
-import com.example.funfrenzy.core.model.*
+import com.example.funfrenzy.core.model.ExitPortal
+import com.example.funfrenzy.core.model.FrenzyGamePhase
+import com.example.funfrenzy.core.model.FunFrenzyLevelConfig
+import com.example.funfrenzy.core.model.FunFrenzyState
+import com.example.funfrenzy.core.model.RescueBuddy
 import com.example.funfrenzy.core.repository.FunFrenzyRepository
 import com.example.watersort.core.audio.GameSound
 import com.example.watersort.core.audio.HapticManager
@@ -19,257 +24,167 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class FunFrenzyViewModel(
-    val repository: FunFrenzyRepository,
-    val soundManager: SoundManager,
-    val hapticManager: HapticManager
+    private val repository: FunFrenzyRepository,
+    private val soundManager: SoundManager,
+    private val hapticManager: HapticManager
 ) : ViewModel() {
 
-    private val _gameState = MutableStateFlow(FunFrenzyGameState())
-    val gameState: StateFlow<FunFrenzyGameState> = _gameState.asStateFlow()
-
-    private var currentLevelConfig: FunFrenzyLevelConfig = FunFrenzyLevelManager.getLevel(1)
-    private var gameLoopJob: Job? = null
+    private val _gameState = MutableStateFlow(
+        FunFrenzyState(
+            buddy = RescueBuddy(200f, 280f),
+            portal = ExitPortal(androidx.compose.ui.geometry.Rect(140f, 540f, 260f, 600f))
+        )
+    )
+    val gameState: StateFlow<FunFrenzyState> = _gameState.asStateFlow()
 
     val soundEnabledFlow = repository.soundEnabledFlow
     val hapticEnabledFlow = repository.hapticEnabledFlow
-    val highestLevelFlow = repository.highestLevelFlow
     val progressFlow = repository.progressFlow
     val completedLevelsFlow = repository.completedLevelsFlow
 
-    init {
-        startLevel(1)
+    private var currentConfig: FunFrenzyLevelConfig = FunFrenzyLevelManager.getLevel(1)
+    private var loopJob: Job? = null
+
+    fun stopSimulation() {
+        loopJob?.cancel()
     }
 
     fun startLevel(levelNumber: Int) {
-        gameLoopJob?.cancel()
-        currentLevelConfig = FunFrenzyLevelManager.getLevel(levelNumber)
+        stopSimulation()
+        val config = FunFrenzyLevelManager.getLevel(levelNumber)
+        currentConfig = config
 
-        val firstSpec = currentLevelConfig.microGames[0]
-        val firstSubState = FunFrenzyEngine.initSubState(firstSpec.type, System.currentTimeMillis())
-
-        _gameState.value = FunFrenzyGameState(
+        _gameState.value = FunFrenzyState(
             levelNumber = levelNumber,
-            microIndex = 0,
-            totalMicroGames = currentLevelConfig.microGames.size,
-            currentSpec = firstSpec,
-            timeLeftSec = firstSpec.durationSec,
-            totalDurationSec = firstSpec.durationSec,
-            lives = 3,
-            maxLives = 3,
-            subState = firstSubState,
-            microResult = MicroResult.PENDING,
-            isIntermission = false,
-            isStageWon = false,
-            isStageOver = false,
+            phase = FrenzyGamePhase.PLAYING,
+            buddy = config.buddy.copy(),
+            anchors = config.anchors.map { it.copy() },
+            ropes = config.ropes.map { it.copy() },
+            hazards = config.hazards.map { it.copy() },
+            portal = config.portal,
+            timeRemainingSeconds = config.timeLimitSeconds,
+            hintRopeId = null,
+            hintsRemaining = 3,
+            extraTimeUsed = false,
             stars = 0
         )
 
-        startGameLoop()
+        startLoop()
     }
 
-    private fun startGameLoop() {
-        gameLoopJob?.cancel()
-        gameLoopJob = viewModelScope.launch {
-            val stepSec = 0.016f
+    fun onSwipeSlice(p1: Offset, p2: Offset) {
+        val state = _gameState.value
+        if (state.phase != FrenzyGamePhase.PLAYING) return
+
+        val anchorsMap = state.anchors.associateBy { it.id }
+        val cutRope = FunFrenzyPhysicsEngine.checkSwipeCut(p1, p2, state.ropes, anchorsMap, state.buddy)
+
+        if (cutRope != null) {
+            if (soundEnabledFlow.value) soundManager.play(GameSound.SELECT)
+            if (hapticEnabledFlow.value) hapticManager.tap()
+
+            _gameState.value = state.copy(
+                ropes = state.ropes.toList(),
+                hintRopeId = if (state.hintRopeId == cutRope.id) null else state.hintRopeId
+            )
+        }
+    }
+
+    fun useHint() {
+        val state = _gameState.value
+        if (state.phase != FrenzyGamePhase.PLAYING || state.hintsRemaining <= 0) return
+
+        val nextRope = state.ropes.filter { !it.isCut }.minByOrNull { it.optimalCutOrder }
+        if (nextRope != null) {
+            _gameState.value = state.copy(
+                hintRopeId = nextRope.id,
+                hintsRemaining = state.hintsRemaining - 1
+            )
+            if (hapticEnabledFlow.value) hapticManager.tap()
+        }
+    }
+
+    fun useExtraTime() {
+        val state = _gameState.value
+        if (state.phase != FrenzyGamePhase.PLAYING || state.extraTimeUsed) return
+
+        _gameState.value = state.copy(
+            timeRemainingSeconds = state.timeRemainingSeconds + 10f,
+            extraTimeUsed = true
+        )
+        if (soundEnabledFlow.value) soundManager.play(GameSound.SELECT)
+        if (hapticEnabledFlow.value) hapticManager.success()
+    }
+
+    private fun startLoop() {
+        loopJob?.cancel()
+        loopJob = viewModelScope.launch {
+            val dt = 0.016f
             while (isActive) {
-                tick(stepSec)
+                val state = _gameState.value
+                if (state.phase != FrenzyGamePhase.PLAYING) break
+
+                val newTime = state.timeRemainingSeconds - dt
+                if (newTime <= 0f) {
+                    handleDefeat(state)
+                    break
+                }
+
+                val anchorsMap = state.anchors.associateBy { it.id }
+                FunFrenzyPhysicsEngine.updatePhysics(
+                    buddy = state.buddy,
+                    ropes = state.ropes,
+                    anchors = anchorsMap,
+                    hazards = state.hazards,
+                    portal = state.portal
+                )
+
+                if (state.buddy.isSaved) {
+                    handleVictory(state)
+                    break
+                } else if (state.buddy.isDead) {
+                    handleDefeat(state)
+                    break
+                }
+
+                _gameState.value = state.copy(
+                    timeRemainingSeconds = newTime,
+                    buddy = state.buddy
+                )
+
                 delay(16)
             }
         }
     }
 
-    private fun tick(dt: Float) {
-        val current = _gameState.value
-        if (current.isIntermission || current.isStageWon || current.isStageOver) return
-
-        val newTime = (current.timeLeftSec - dt).coerceAtLeast(0f)
-
-        // Step dynamic microgames (falling gem, rocks, needle)
-        val (newSubState, dynamicResult) = FunFrenzyEngine.stepDynamic(
-            type = current.currentSpec.type,
-            state = current.subState,
-            dt = dt,
-            speedMult = currentLevelConfig.speedMultiplier
-        )
-
-        if (dynamicResult == MicroResult.SUCCESS) {
-            handleMicroResult(MicroResult.SUCCESS, newSubState)
-            return
-        } else if (dynamicResult == MicroResult.FAIL) {
-            handleMicroResult(MicroResult.FAIL, newSubState)
-            return
+    private fun handleVictory(state: FunFrenzyState) {
+        val timeRatio = state.timeRemainingSeconds / currentConfig.timeLimitSeconds
+        val stars = when {
+            timeRatio >= 0.5f -> 3
+            timeRatio >= 0.2f -> 2
+            else -> 1
         }
 
-        // Check if time expired
-        if (newTime <= 0f) {
-            // For dodge rocks, surviving till time expires IS success!
-            if (current.currentSpec.type == MicroGameType.DODGE_ROCKS) {
-                handleMicroResult(MicroResult.SUCCESS, newSubState)
-            } else {
-                handleMicroResult(MicroResult.FAIL, newSubState)
-            }
-            return
-        }
-
-        _gameState.value = current.copy(
-            timeLeftSec = newTime,
-            subState = newSubState
+        _gameState.value = state.copy(
+            phase = FrenzyGamePhase.WON,
+            stars = stars
         )
-    }
 
-    private fun handleMicroResult(result: MicroResult, finalSubState: MicroSubState) {
-        val current = _gameState.value
-        if (current.microResult != MicroResult.PENDING) return
-
-        val newLives = if (result == MicroResult.FAIL) (current.lives - 1).coerceAtLeast(0) else current.lives
-
-        if (result == MicroResult.SUCCESS) {
-            if (soundEnabledFlow.value) soundManager.play(GameSound.LEVEL_COMPLETE)
-            if (hapticEnabledFlow.value) hapticManager.success()
-        } else {
-            if (soundEnabledFlow.value) soundManager.play(GameSound.INVALID)
-            if (hapticEnabledFlow.value) hapticManager.error()
-        }
-
-        _gameState.value = current.copy(
-            microResult = result,
-            lives = newLives,
-            subState = finalSubState,
-            isIntermission = true
-        )
+        if (soundEnabledFlow.value) soundManager.play(GameSound.WIN)
+        if (hapticEnabledFlow.value) hapticManager.success()
 
         viewModelScope.launch {
-            delay(1200)
-            advanceAfterMicroGame()
+            repository.saveLevelCompletion(state.levelNumber, state.timeRemainingSeconds.toInt(), stars)
         }
     }
 
-    private fun advanceAfterMicroGame() {
-        val current = _gameState.value
-        if (current.lives <= 0) {
-            // Stage Defeat
-            _gameState.value = current.copy(isStageOver = true, isIntermission = false)
-            return
-        }
-
-        val nextIndex = current.microIndex + 1
-        if (nextIndex >= current.totalMicroGames) {
-            // Stage Victory!
-            val stars = when (current.lives) {
-                3 -> 3
-                2 -> 2
-                else -> 1
-            }
-            _gameState.value = current.copy(
-                isStageWon = true,
-                isIntermission = false,
-                stars = stars
-            )
-            if (soundEnabledFlow.value) soundManager.play(GameSound.WIN)
-            viewModelScope.launch {
-                repository.saveLevelCompletion(current.levelNumber, stars)
-            }
-            return
-        }
-
-        // Next microgame in stage
-        val nextSpec = currentLevelConfig.microGames[nextIndex]
-        val nextSubState = FunFrenzyEngine.initSubState(nextSpec.type, System.currentTimeMillis() + nextIndex)
-
-        _gameState.value = current.copy(
-            microIndex = nextIndex,
-            currentSpec = nextSpec,
-            timeLeftSec = nextSpec.durationSec,
-            totalDurationSec = nextSpec.durationSec,
-            subState = nextSubState,
-            microResult = MicroResult.PENDING,
-            isIntermission = false
+    private fun handleDefeat(state: FunFrenzyState) {
+        _gameState.value = state.copy(
+            phase = FrenzyGamePhase.LOST
         )
-    }
 
-    // User interactions
-    fun onTapRush() {
-        val current = _gameState.value
-        if (current.isIntermission || current.currentSpec.type != MicroGameType.TAP_RUSH) return
-
-        val newTaps = current.subState.currentTaps + 1
-        val req = current.subState.requiredTaps
-        if (soundEnabledFlow.value) soundManager.play(GameSound.KNIFE_THROW)
-        if (hapticEnabledFlow.value) hapticManager.light()
-
-        val updatedSub = current.subState.copy(currentTaps = newTaps)
-        if (newTaps >= req) {
-            handleMicroResult(MicroResult.SUCCESS, updatedSub)
-        } else {
-            _gameState.value = current.copy(subState = updatedSub)
-        }
-    }
-
-    fun onBucketDrag(x: Float) {
-        val current = _gameState.value
-        if (current.isIntermission || current.currentSpec.type != MicroGameType.CATCH_FALLING) return
-        _gameState.value = current.copy(
-            subState = current.subState.copy(bucketX = x.coerceIn(0.1f, 0.9f))
-        )
-    }
-
-    fun onPopBalloon(id: Int) {
-        val current = _gameState.value
-        if (current.isIntermission || current.currentSpec.type != MicroGameType.POP_BALLOONS) return
-
-        val balloons = current.subState.balloons.map {
-            if (it.id == id && !it.isPopped) it.copy(isPopped = true) else it
-        }
-        val popped = balloons.count { it.isPopped }
-        if (soundEnabledFlow.value) soundManager.play(GameSound.APPLE)
-        if (hapticEnabledFlow.value) hapticManager.light()
-
-        val updatedSub = current.subState.copy(balloons = balloons, poppedCount = popped)
-        if (popped >= current.subState.requiredPops) {
-            handleMicroResult(MicroResult.SUCCESS, updatedSub)
-        } else {
-            _gameState.value = current.copy(subState = updatedSub)
-        }
-    }
-
-    fun onDodgeMove(x: Float) {
-        val current = _gameState.value
-        if (current.isIntermission || current.currentSpec.type != MicroGameType.DODGE_ROCKS) return
-        _gameState.value = current.copy(
-            subState = current.subState.copy(playerX = x.coerceIn(0.1f, 0.9f))
-        )
-    }
-
-    fun onStopNeedle() {
-        val current = _gameState.value
-        if (current.isIntermission || current.currentSpec.type != MicroGameType.STOP_NEEDLE) return
-        if (current.subState.isNeedleStopped) return
-
-        val stoppedSub = current.subState.copy(isNeedleStopped = true)
-        val angle = (stoppedSub.needleAngle % 360f + 360f) % 360f
-        val inZone = angle >= stoppedSub.targetZoneStartAngle && angle <= stoppedSub.targetZoneEndAngle
-        handleMicroResult(if (inZone) MicroResult.SUCCESS else MicroResult.FAIL, stoppedSub)
-    }
-
-    fun onCutWire(colorName: String) {
-        val current = _gameState.value
-        if (current.isIntermission || current.currentSpec.type != MicroGameType.CUT_WIRE) return
-
-        val wires = current.subState.wires.map {
-            if (it.colorName == colorName) it.copy(isCut = true) else it
-        }
-        val updatedSub = current.subState.copy(wires = wires)
-        val isCorrect = colorName == current.subState.targetWireColorName
-        handleMicroResult(if (isCorrect) MicroResult.SUCCESS else MicroResult.FAIL, updatedSub)
-    }
-
-    fun onSelectOddItem(index: Int) {
-        val current = _gameState.value
-        if (current.isIntermission || current.currentSpec.type != MicroGameType.FIND_ODD_ONE) return
-
-        val isCorrect = index == current.subState.oddIndex
-        val updatedSub = current.subState.copy(selectedIndex = index)
-        handleMicroResult(if (isCorrect) MicroResult.SUCCESS else MicroResult.FAIL, updatedSub)
+        if (soundEnabledFlow.value) soundManager.play(GameSound.GAME_OVER)
+        if (hapticEnabledFlow.value) hapticManager.error()
     }
 
     fun restartLevel() {
@@ -277,16 +192,18 @@ class FunFrenzyViewModel(
     }
 
     fun nextLevel() {
-        startLevel(_gameState.value.levelNumber + 1)
+        val next = (_gameState.value.levelNumber + 1).coerceAtMost(FunFrenzyLevelManager.TOTAL_LEVELS)
+        startLevel(next)
     }
 
     fun toggleSound() {
-        repository.setSoundEnabled(!soundEnabledFlow.value)
+        val current = soundEnabledFlow.value
+        repository.setSoundEnabled(!current)
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        gameLoopJob?.cancel()
+    fun toggleHaptic() {
+        val current = hapticEnabledFlow.value
+        repository.setHapticEnabled(!current)
     }
 
     class Factory(

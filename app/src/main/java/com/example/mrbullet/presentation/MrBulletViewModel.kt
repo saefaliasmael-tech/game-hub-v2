@@ -1,12 +1,15 @@
 package com.example.mrbullet.presentation
 
+import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.mrbullet.core.engine.MrBulletEngine
+import com.example.mrbullet.core.engine.MrBulletPhysicsEngine
 import com.example.mrbullet.core.level.MrBulletLevelManager
-import com.example.mrbullet.core.model.Bullet
-import com.example.mrbullet.core.model.MrBulletGameState
+import com.example.mrbullet.core.model.ActiveBullet
+import com.example.mrbullet.core.model.BulletGamePhase
+import com.example.mrbullet.core.model.MrBulletLevelConfig
+import com.example.mrbullet.core.model.MrBulletState
 import com.example.mrbullet.core.repository.MrBulletRepository
 import com.example.watersort.core.audio.GameSound
 import com.example.watersort.core.audio.HapticManager
@@ -23,149 +26,187 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 class MrBulletViewModel(
-    val repository: MrBulletRepository,
-    val soundManager: SoundManager,
-    val hapticManager: HapticManager
+    private val repository: MrBulletRepository,
+    private val soundManager: SoundManager,
+    private val hapticManager: HapticManager
 ) : ViewModel() {
 
-    private val _gameState = MutableStateFlow(MrBulletGameState())
-    val gameState: StateFlow<MrBulletGameState> = _gameState.asStateFlow()
-
-    private var physicsJob: Job? = null
+    private val _gameState = MutableStateFlow(MrBulletState())
+    val gameState: StateFlow<MrBulletState> = _gameState.asStateFlow()
 
     val soundEnabledFlow = repository.soundEnabledFlow
     val hapticEnabledFlow = repository.hapticEnabledFlow
-    val highestLevelFlow = repository.highestLevelFlow
     val progressFlow = repository.progressFlow
     val completedLevelsFlow = repository.completedLevelsFlow
 
-    init {
-        startLevel(1)
+    private var currentConfig: MrBulletLevelConfig = MrBulletLevelManager.getLevel(1)
+    private var bulletLoopJob: Job? = null
+
+    fun stopSimulation() {
+        bulletLoopJob?.cancel()
     }
 
     fun startLevel(levelNumber: Int) {
-        physicsJob?.cancel()
-
+        stopSimulation()
         val config = MrBulletLevelManager.getLevel(levelNumber)
+        currentConfig = config
 
-        _gameState.value = MrBulletGameState(
+        _gameState.value = MrBulletState(
             levelNumber = levelNumber,
-            heroX = config.heroX,
-            heroY = config.heroY,
-            bulletsLeft = config.maxBullets,
+            phase = BulletGamePhase.AIMING,
+            bulletsRemaining = config.maxBullets,
             maxBullets = config.maxBullets,
+            aimAngleRad = 0f,
+            isAiming = false,
+            trajectoryPoints = emptyList(),
             activeBullets = emptyList(),
-            enemies = config.enemies,
-            walls = config.walls,
-            aimAngle = null,
-            isWon = false,
-            isGameOver = false,
-            stars = 0
+            enemies = config.enemies.map { it.copy() },
+            barrels = config.barrels.map { it.copy() },
+            stars = 0,
+            score = 0
         )
-
-        startPhysicsLoop()
     }
 
     fun onAim(touchX: Float, touchY: Float) {
-        val current = _gameState.value
-        if (current.isWon || current.isGameOver || current.bulletsLeft <= 0) return
+        val state = _gameState.value
+        if (state.phase != BulletGamePhase.AIMING) return
 
-        val dx = touchX - current.heroX
-        val dy = touchY - current.heroY
-        val angle = atan2(dy, dx)
-        _gameState.value = current.copy(aimAngle = angle)
+        val hero = currentConfig.hero
+        val angle = atan2(touchY - (hero.y - 45f), touchX - hero.x)
+
+        val trajectory = MrBulletPhysicsEngine.calculateTrajectory(
+            startX = hero.x,
+            startY = hero.y - 45f,
+            angleRad = angle,
+            walls = currentConfig.walls
+        )
+
+        _gameState.value = state.copy(
+            isAiming = true,
+            aimAngleRad = angle,
+            trajectoryPoints = trajectory
+        )
     }
 
-    fun onShoot(touchX: Float, touchY: Float) {
-        val current = _gameState.value
-        if (current.isWon || current.isGameOver || current.bulletsLeft <= 0) {
-            _gameState.value = current.copy(aimAngle = null)
-            return
-        }
+    fun onReleaseAim() {
+        val state = _gameState.value
+        if (state.phase != BulletGamePhase.AIMING || !state.isAiming) return
+        if (state.bulletsRemaining <= 0) return
 
-        val dx = touchX - current.heroX
-        val dy = touchY - current.heroY
-        val angle = atan2(dy, dx)
+        val hero = currentConfig.hero
+        val angle = state.aimAngleRad
+        val speed = 16f
 
-        val speed = MrBulletEngine.BULLET_SPEED
-        val newBullet = Bullet(
-            x = current.heroX + cos(angle) * 0.05f,
-            y = current.heroY + sin(angle) * 0.05f,
+        val bullet = ActiveBullet(
+            x = hero.x,
+            y = hero.y - 45f,
             vx = cos(angle) * speed,
             vy = sin(angle) * speed
         )
 
-        if (soundEnabledFlow.value) soundManager.play(GameSound.KNIFE_THROW)
-        if (hapticEnabledFlow.value) hapticManager.strong()
-
-        val bullets = current.activeBullets + newBullet
-        _gameState.value = current.copy(
-            bulletsLeft = current.bulletsLeft - 1,
-            activeBullets = bullets,
-            aimAngle = null
+        _gameState.value = state.copy(
+            phase = BulletGamePhase.BULLET_FLYING,
+            isAiming = false,
+            trajectoryPoints = emptyList(),
+            bulletsRemaining = state.bulletsRemaining - 1,
+            activeBullets = state.activeBullets + bullet
         )
+
+        if (soundEnabledFlow.value) soundManager.play(GameSound.KNIFE_THROW)
+        if (hapticEnabledFlow.value) hapticManager.tap()
+
+        startBulletSimulation()
     }
 
-    private fun startPhysicsLoop() {
-        physicsJob?.cancel()
-        physicsJob = viewModelScope.launch {
+    private fun startBulletSimulation() {
+        bulletLoopJob?.cancel()
+        bulletLoopJob = viewModelScope.launch {
             while (isActive) {
-                updatePhysics()
+                val state = _gameState.value
+                val bullets = state.activeBullets.filter { it.isAlive }
+
+                if (bullets.isEmpty()) {
+                    // Check if won or lost
+                    val allDead = state.enemies.none { it.isAlive }
+                    if (allDead) {
+                        handleVictory(state)
+                    } else if (state.bulletsRemaining <= 0) {
+                        handleDefeat(state)
+                    } else {
+                        // More bullets left, back to aiming
+                        _gameState.value = state.copy(
+                            phase = BulletGamePhase.AIMING,
+                            activeBullets = emptyList()
+                        )
+                    }
+                    break
+                }
+
+                for (bullet in bullets) {
+                    MrBulletPhysicsEngine.updateBullet(
+                        bullet = bullet,
+                        walls = currentConfig.walls,
+                        enemies = state.enemies,
+                        barrels = state.barrels,
+                        onEnemyKilled = { enemy ->
+                            if (soundEnabledFlow.value) soundManager.play(GameSound.HIT)
+                            if (hapticEnabledFlow.value) hapticManager.success()
+                        },
+                        onTntExploded = { barrel ->
+                            if (soundEnabledFlow.value) soundManager.play(GameSound.KNIFE_HIT)
+                            if (hapticEnabledFlow.value) hapticManager.strong()
+                        }
+                    )
+                }
+
+                // Check mid-flight win (all enemies defeated)
+                if (state.enemies.none { it.isAlive }) {
+                    delay(200)
+                    handleVictory(state)
+                    break
+                }
+
+                _gameState.value = state.copy(
+                    activeBullets = bullets.filter { it.isAlive },
+                    enemies = state.enemies.toList(),
+                    barrels = state.barrels.toList()
+                )
+
                 delay(16)
             }
         }
     }
 
-    private fun updatePhysics() {
-        val current = _gameState.value
-        if (current.isWon || current.isGameOver) return
-
-        if (current.activeBullets.isEmpty()) {
-            // Check if game over condition met
-            val allDead = current.enemies.all { it.isDead }
-            if (!allDead && current.bulletsLeft == 0) {
-                _gameState.value = current.copy(isGameOver = true)
-                if (soundEnabledFlow.value) soundManager.play(GameSound.INVALID)
-                if (hapticEnabledFlow.value) hapticManager.error()
-            }
-            return
+    private fun handleVictory(state: MrBulletState) {
+        val bulletsUsed = currentConfig.maxBullets - state.bulletsRemaining
+        val stars = when {
+            bulletsUsed <= 1 -> 3
+            bulletsUsed == 2 -> 2
+            else -> 1
         }
 
-        val (updatedBullets, updatedEnemies, updatedWalls) = MrBulletEngine.stepPhysics(
-            bullets = current.activeBullets,
-            enemies = current.enemies,
-            walls = current.walls
+        _gameState.value = state.copy(
+            phase = BulletGamePhase.WON,
+            stars = stars,
+            activeBullets = emptyList()
         )
 
-        // Check if all enemies eliminated
-        val allDead = updatedEnemies.all { it.isDead }
-        var isWon = false
-        var isGameOver = false
-        var stars = current.stars
+        if (soundEnabledFlow.value) soundManager.play(GameSound.WIN)
+        if (hapticEnabledFlow.value) hapticManager.success()
 
-        if (allDead) {
-            isWon = true
-            stars = MrBulletEngine.calculateStars(current.bulletsLeft, current.maxBullets)
-            if (soundEnabledFlow.value) soundManager.play(GameSound.WIN)
-            if (hapticEnabledFlow.value) hapticManager.success()
-
-            viewModelScope.launch {
-                repository.saveLevelCompletion(current.levelNumber, stars)
-            }
-        } else if (updatedBullets.isEmpty() && current.bulletsLeft == 0) {
-            isGameOver = true
-            if (soundEnabledFlow.value) soundManager.play(GameSound.INVALID)
-            if (hapticEnabledFlow.value) hapticManager.error()
+        viewModelScope.launch {
+            repository.saveLevelCompletion(state.levelNumber, state.bulletsRemaining, stars)
         }
+    }
 
-        _gameState.value = current.copy(
-            activeBullets = updatedBullets,
-            enemies = updatedEnemies,
-            walls = updatedWalls,
-            isWon = isWon,
-            isGameOver = isGameOver,
-            stars = stars
+    private fun handleDefeat(state: MrBulletState) {
+        _gameState.value = state.copy(
+            phase = BulletGamePhase.LOST,
+            activeBullets = emptyList()
         )
+
+        if (soundEnabledFlow.value) soundManager.play(GameSound.GAME_OVER)
+        if (hapticEnabledFlow.value) hapticManager.error()
     }
 
     fun restartLevel() {
@@ -173,16 +214,18 @@ class MrBulletViewModel(
     }
 
     fun nextLevel() {
-        startLevel(_gameState.value.levelNumber + 1)
+        val next = (_gameState.value.levelNumber + 1).coerceAtMost(MrBulletLevelManager.TOTAL_LEVELS)
+        startLevel(next)
     }
 
     fun toggleSound() {
-        repository.setSoundEnabled(!soundEnabledFlow.value)
+        val current = soundEnabledFlow.value
+        repository.setSoundEnabled(!current)
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        physicsJob?.cancel()
+    fun toggleHaptic() {
+        val current = hapticEnabledFlow.value
+        repository.setHapticEnabled(!current)
     }
 
     class Factory(

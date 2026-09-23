@@ -93,6 +93,13 @@ fun ColorSwitchHomeScreen(
                 )
             )
         },
+        bottomBar = {
+            com.zubaluba.gamehub.ads.AdBanner(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+            )
+        },
         containerColor = Color(0xFF09090B)
     ) { padding ->
         Column(

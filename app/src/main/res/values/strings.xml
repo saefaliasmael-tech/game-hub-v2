@@ -137,7 +137,12 @@
     <string name="tutorial_step_3">Fill each bottle with a single color to win!</string>
     <string name="got_it">Got it!</string>
     <string name="not_enough_coins">Not enough coins!</string>
-    <string name="ad_not_available">Ad not available in offline mode</string>
+    <string name="ad_not_available">Ad is not currently available, please try again later.</string>
+    <string name="ad_offline">No ads available in offline mode</string>
+    <string name="watch_ad_reward">Watch Ad (+50 Coins)</string>
+    <string name="ad_reward_claimed">+50 Coins Claimed!</string>
+    <string name="privacy_options">Privacy Options</string>
+    <string name="privacy_options_desc">Manage your advertising and privacy consent preferences</string>
     <string name="invalid_move_same_bottle">Choose another bottle to pour into</string>
     <string name="invalid_move_source_empty">This bottle is empty</string>
     <string name="invalid_move_target_full">Target bottle is full</string>
@@ -145,7 +150,6 @@
     <string name="invalid_move_already_solved">This bottle is already completed</string>
     <string name="invalid_move_general">Invalid move</string>
     <string name="watch_ad">Watch Ad</string>
-    <string name="watch_ad_reward">Watch Ad (%s)</string>
     <string name="reward_earned">Reward earned!</string>
     <string name="ad_loading">Loading ad…</string>
 </resources>

@@ -27,8 +27,18 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
+import android.app.Activity
 import com.example.R
 import com.example.watersort.core.model.InvalidReason
+import com.zubaluba.gamehub.ads.NetworkUtils
+import com.zubaluba.gamehub.ads.UnifiedAdManager
+
+enum class AdRewardState {
+    AVAILABLE,
+    LOADING,
+    SHOWING,
+    CLAIMED
+}
 
 data class GameUiState(
     val isLoading: Boolean = true,
@@ -53,7 +63,8 @@ data class GameUiState(
     val colorBlindMode: Boolean = false,
     val skinId: String = "classic",
     val themeId: String = "classic",
-    val showTutorial: Boolean = false
+    val showTutorial: Boolean = false,
+    val adRewardState: AdRewardState = AdRewardState.AVAILABLE
 )
 
 class GameViewModel(application: Application) : AndroidViewModel(application) {
@@ -99,7 +110,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun loadLevel(levelId: Int) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, hintMove = null, showWinDialog = false) }
+            _uiState.update { it.copy(isLoading = true, hintMove = null, showWinDialog = false, adRewardState = AdRewardState.AVAILABLE) }
             usedUndoInLevel = false
             hadInvalidMovesInLevel = false
             engine.clearUndo()
@@ -304,7 +315,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 showWinDialog = true,
                 isPerfectRun = isPerfect,
                 coinsEarnedOnWin = coinsReward,
-                gameState = state.copy(starsEarned = stars)
+                gameState = state.copy(starsEarned = stars),
+                adRewardState = AdRewardState.AVAILABLE
             )
         }
     }
@@ -428,14 +440,57 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.update { it.copy(userMessage = null) }
     }
 
-    fun canUndo(): Boolean = engine.canUndo()
-
-    fun onAdRewardEarned(rewardCoins: Int = 50) {
-        viewModelScope.launch {
-            repository.addCoins(rewardCoins, TransactionType.REWARD_DAILY, "Rewarded Ad")
-            soundManager.play(GameSound.COIN)
-            hapticManager.success()
-            _uiState.update { it.copy(userMessage = "+$rewardCoins Coins received!") }
+    fun claimRewardedAd(activity: Activity) {
+        val currentState = _uiState.value.adRewardState
+        if (currentState != AdRewardState.AVAILABLE) {
+            // Already claimed or in-progress - prevent rapid clicks / duplicate awards
+            return
         }
+
+        // Check if offline first
+        if (!NetworkUtils.isOnline(activity)) {
+            _uiState.update { it.copy(userMessage = activity.getString(R.string.ad_offline)) }
+            return
+        }
+
+        val adManager = UnifiedAdManager.getInstance(activity)
+        if (!adManager.isRewardedAdReady()) {
+            _uiState.update { it.copy(userMessage = activity.getString(R.string.ad_not_available)) }
+            adManager.preloadRewarded()
+            return
+        }
+
+        // Mark as SHOWING to lock out rapid clicks
+        _uiState.update { it.copy(adRewardState = AdRewardState.SHOWING) }
+
+        adManager.showRewarded(
+            activity = activity,
+            onUserEarnedReward = { _ ->
+                viewModelScope.launch {
+                    val currentLevel = _uiState.value.gameState?.levelNumber ?: 1
+                    repository.addCoins(50, TransactionType.REWARD_ACHIEVEMENT, "Water Sort Rewarded Ad L$currentLevel")
+                    soundManager.play(GameSound.WIN)
+                    hapticManager.success()
+                    _uiState.update {
+                        it.copy(
+                            adRewardState = AdRewardState.CLAIMED,
+                            userMessage = activity.getString(R.string.ad_reward_claimed)
+                        )
+                    }
+                }
+            },
+            onAdClosed = {
+                // If ad closed without earning reward, revert to AVAILABLE if not claimed
+                _uiState.update { current ->
+                    if (current.adRewardState != AdRewardState.CLAIMED) {
+                        current.copy(adRewardState = AdRewardState.AVAILABLE)
+                    } else {
+                        current
+                    }
+                }
+            }
+        )
     }
+
+    fun canUndo(): Boolean = engine.canUndo()
 }

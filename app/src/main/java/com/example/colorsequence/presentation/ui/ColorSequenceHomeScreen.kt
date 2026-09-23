@@ -93,6 +93,13 @@ fun ColorSequenceHomeScreen(
                 )
             )
         },
+        bottomBar = {
+            com.zubaluba.gamehub.ads.AdBanner(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+            )
+        },
         containerColor = Color(0xFF0F071D)
     ) { paddingValues ->
         Column(

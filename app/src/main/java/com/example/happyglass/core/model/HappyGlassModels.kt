@@ -1,69 +1,91 @@
 package com.example.happyglass.core.model
 
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Rect
 
-data class WaterParticle(
+data class WaterDrop(
     var x: Float,
     var y: Float,
     var vx: Float = 0f,
     var vy: Float = 0f,
+    val radius: Float = 6f,
     var inGlass: Boolean = false,
     var isLost: Boolean = false
 )
 
-data class WaterTap(
-    val x: Float,
-    val y: Float,
-    val totalWater: Int = 45
+data class DrawnStroke(
+    val points: List<Offset>,
+    val length: Float
 )
 
-data class Glass(
-    val x: Float, // Top-left x
-    val y: Float, // Top-left y
-    val width: Float = 0.24f,
-    val height: Float = 0.22f,
-    val requiredWater: Int = 22
-) {
-    val fillTargetRatio: Float get() = 0.70f
-    val waterLineY: Float get() = y + height * (1f - fillTargetRatio)
+data class LineSegment(
+    val start: Offset,
+    val end: Offset
+)
+
+enum class ObstacleType {
+    SOLID_BLOCK,
+    ROTATING_WHEEL,
+    HAZARD_HOT_PLATE,
+    BOUNCER_PAD
 }
 
-data class ObstacleLine(
-    val x1: Float,
-    val y1: Float,
-    val x2: Float,
-    val y2: Float,
-    val strokeWidth: Float = 0.02f
+data class HappyObstacle(
+    val bounds: Rect,
+    val type: ObstacleType = ObstacleType.SOLID_BLOCK,
+    val angleDegrees: Float = 0f
+)
+
+data class GlassContainer(
+    val centerX: Float,
+    val bottomY: Float,
+    val width: Float = 140f,
+    val height: Float = 160f,
+    val wallThickness: Float = 12f
+) {
+    val leftWallX: Float get() = centerX - width / 2f
+    val rightWallX: Float get() = centerX + width / 2f
+    val topY: Float get() = bottomY - height
+    val waterTargetY: Float get() = bottomY - height * 0.65f
+}
+
+data class Faucet(
+    val x: Float,
+    val y: Float,
+    val totalDrops: Int = 80
 )
 
 data class HappyGlassLevelConfig(
     val levelNumber: Int,
-    val tap: WaterTap,
-    val glass: Glass,
-    val obstacles: List<ObstacleLine>,
-    val maxInkLength: Float = 1.2f
+    val title: String,
+    val faucet: Faucet,
+    val glass: GlassContainer,
+    val obstacles: List<HappyObstacle> = emptyList(),
+    val maxInkLength: Float = 1200f,
+    val requiredDrops: Int = 35
 )
 
-data class HappyGlassGameState(
-    val levelNumber: Int = 1,
-    val tap: WaterTap = WaterTap(0.5f, 0.15f),
-    val glass: Glass = Glass(0.5f, 0.75f),
-    val obstacles: List<ObstacleLine> = emptyList(),
-    val waterParticles: List<WaterParticle> = emptyList(),
-    val drawnPoints: List<Offset> = emptyList(),
-    val maxInkLength: Float = 1.2f,
-    val usedInkLength: Float = 0f,
-    val isSimulating: Boolean = false,
-    val dispensedCount: Int = 0,
-    val waterInGlassCount: Int = 0,
-    val isWon: Boolean = false,
-    val isGameOver: Boolean = false,
-    val stars: Int = 0
-) {
-    val inkRemainingRatio: Float
-        get() = (1f - (usedInkLength / maxInkLength)).coerceIn(0f, 1f)
-
-    val isGlassHappy: Boolean
-        get() = waterInGlassCount >= glass.requiredWater
+enum class GamePhase {
+    DRAWING,
+    POURING,
+    WON,
+    LOST
 }
+
+data class HappyGlassState(
+    val levelNumber: Int = 1,
+    val phase: GamePhase = GamePhase.DRAWING,
+    val strokes: List<DrawnStroke> = emptyList(),
+    val currentStrokePoints: List<Offset> = emptyList(),
+    val totalInkUsed: Float = 0f,
+    val maxInkLength: Float = 1200f,
+    val drops: List<WaterDrop> = emptyList(),
+    val dropsInGlass: Int = 0,
+    val dropsLost: Int = 0,
+    val requiredDrops: Int = 35,
+    val totalDropsToSpawn: Int = 80,
+    val spawnedDropsCount: Int = 0,
+    val stars: Int = 0,
+    val isSadGlass: Boolean = true,
+    val waterLevelRatio: Float = 0f
+)

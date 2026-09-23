@@ -1,5 +1,6 @@
-{  "name": "Zuba Luba",
-  "description": "Zuba Luba - Premium multi-game universe featuring 19 standalone games including Water Sort, Happy Glass, Mr Bullet, Protect Sheep, Fun Frenzy, Pull the Pin, Pic Puzzle, Rope Rescue, Rope Around, AA, Mini Tower Defense, Knife Hit, Color Switch, Stop the Time, Mastermind, 2048, Unblock Me, and Memory Cards.",
+{
+  "name": "Zuba Luba",
+  "description": "Zuba Luba Game Hub - Multi-game arcade & puzzle hub featuring 19 offline-ready games.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

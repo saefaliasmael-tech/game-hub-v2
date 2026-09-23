@@ -35,9 +35,7 @@ class RopeAroundViewModel(
     val progressFlow = repository.progressFlow
     val completedLevelsFlow = repository.completedLevelsFlow
 
-    init {
-        startLevel(1)
-    }
+    // Levels are started on demand when the screen or user launches a level
 
     fun startLevel(levelNumber: Int) {
         val config = RopeAroundLevelManager.getLevel(levelNumber)

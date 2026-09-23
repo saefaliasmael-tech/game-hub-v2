@@ -98,6 +98,13 @@ fun StopTheTimeHomeScreen(
                 )
             )
         },
+        bottomBar = {
+            com.zubaluba.gamehub.ads.AdBanner(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+            )
+        },
         containerColor = Color(0xFF0B1120)
     ) { padding ->
         Column(

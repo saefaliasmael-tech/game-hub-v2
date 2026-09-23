@@ -1,5 +1,6 @@
 package com.example.hub.ui.screens
 
+import android.app.Activity
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.BuildConfig
 import com.example.R
+import com.zubaluba.gamehub.ads.ConsentManager
 import com.example.hub.data.HubPreferences
 import com.example.hub.ui.components.UpdateDialog
 import com.example.hub.ui.theme.HubColors
@@ -51,6 +53,7 @@ fun HubSettingsScreen(
     val updateChecker = remember { UpdateChecker(context) }
     val updateDownloader = remember { UpdateDownloader(context) }
     val updateInstaller = remember { UpdateInstaller(context) }
+    val consentManager = remember { ConsentManager.getInstance(context) }
     var updateState by remember { mutableStateOf<UpdateState>(UpdateState.Idle) }
     var isCheckingUpdates by remember { mutableStateOf(false) }
 
@@ -195,6 +198,49 @@ fun HubSettingsScreen(
                                 checkedTrackColor = HubColors.PrimaryViolet
                             )
                         )
+                    }
+                }
+            }
+
+            // Privacy & Consent Preferences Card
+            Card(
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = HubColors.SurfaceLow),
+                border = androidx.compose.foundation.BorderStroke(1.dp, HubColors.Hairline),
+                modifier = Modifier.fillMaxWidth().testTag("privacy_settings_card")
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    SettingItem(
+                        icon = Icons.Filled.Policy,
+                        title = stringResource(R.string.privacy_options),
+                        subtitle = stringResource(R.string.privacy_options_desc)
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    OutlinedButton(
+                        onClick = {
+                            val activity = context as? Activity
+                            if (activity != null) {
+                                consentManager.showPrivacyOptionsForm(activity) { error ->
+                                    if (error != null) {
+                                        Toast.makeText(context, error.message, Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("privacy_options_btn"),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = HubColors.Cyan
+                        ),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, HubColors.Cyan.copy(alpha = 0.5f))
+                    ) {
+                        Icon(imageVector = Icons.Filled.Security, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(stringResource(R.string.privacy_options))
                     }
                 }
             }

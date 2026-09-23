@@ -3,7 +3,7 @@
     <item
         android:width="66dp"
         android:height="66dp"
-        android:drawable="@drawable/img_zuba_luba_icon"
+        android:drawable="@drawable/ic_water_sort_icon"
         android:gravity="center" />
 </layer-list>
 

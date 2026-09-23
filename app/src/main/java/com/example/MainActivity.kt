@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import com.example.ads.AdManager
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -56,6 +55,46 @@ import com.example.funfrenzy.core.repository.FunFrenzyRepository
 import com.example.funfrenzy.presentation.FunFrenzyViewModel
 import com.example.funfrenzy.presentation.ui.FunFrenzyGameScreen
 import com.example.funfrenzy.presentation.ui.FunFrenzyHomeScreen
+import com.example.appleworm.repository.AppleWormRepository
+import com.example.appleworm.presentation.AppleWormViewModel
+import com.example.appleworm.presentation.ui.AppleWormScreen
+import com.example.helixjump.repository.HelixJumpRepository
+import com.example.helixjump.presentation.HelixJumpViewModel
+import com.example.helixjump.presentation.ui.HelixJumpScreen
+import com.example.colormaze3d.repository.ColorMazeRepository
+import com.example.colormaze3d.presentation.ColorMazeViewModel
+import com.example.colormaze3d.presentation.ui.ColorMazeScreen
+import com.example.sandloop.repository.SandLoopRepository
+import com.example.sandloop.presentation.SandLoopViewModel
+import com.example.sandloop.presentation.ui.SandLoopScreen
+import com.example.woodturning.repository.WoodturningRepository
+import com.example.woodturning.presentation.WoodturningViewModel
+import com.example.woodturning.presentation.ui.WoodturningScreen
+import com.example.doodlejump.repository.DoodleJumpRepository
+import com.example.doodlejump.presentation.DoodleJumpViewModel
+import com.example.doodlejump.presentation.ui.DoodleJumpScreen
+import com.example.tombofthemask.repository.TombOfTheMaskRepository
+import com.example.tombofthemask.presentation.TombOfTheMaskViewModel
+import com.example.tombofthemask.presentation.ui.TombOfTheMaskScreen
+import com.example.crossyroad.repository.CrossyRoadRepository
+import com.example.crossyroad.presentation.CrossyRoadViewModel
+import com.example.crossyroad.presentation.ui.CrossyRoadScreen
+import com.example.paperio2.repository.PaperIoRepository
+import com.example.paperio2.presentation.PaperIoViewModel
+import com.example.paperio2.presentation.ui.PaperIoScreen
+import com.example.holeio.repository.HoleIoRepository
+import com.example.holeio.presentation.HoleIoViewModel
+import com.example.holeio.presentation.ui.HoleIoScreen
+import com.example.seabattle2.repository.SeaBattleRepository
+import com.example.seabattle2.presentation.SeaBattleViewModel
+import com.example.seabattle2.presentation.ui.SeaBattleScreen
+import com.example.iqboost.repository.IQBoostRepository
+import com.example.iqboost.presentation.IQBoostViewModel
+import com.example.iqboost.presentation.ui.IQBoostScreen
+import com.example.ballguys.repository.BallGuysRepository
+import com.example.ballguys.presentation.BallGuysViewModel
+import com.example.ballguys.presentation.ui.BallGuysScreen
+import androidx.compose.ui.platform.LocalContext
 import com.example.colorsequence.core.repository.ColorSequenceRepository
 import com.example.colorsequence.presentation.ColorSequenceViewModel
 import com.example.colorsequence.presentation.ui.ColorSequenceGameScreen
@@ -116,7 +155,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        AdManager.initialize(this)
         val database = AppDatabase.getDatabase(this)
         val repository = GameRepository(database)
         val colorSequenceRepository = ColorSequenceRepository(database)
@@ -140,6 +178,12 @@ class MainActivity : ComponentActivity() {
         val soundManager = SoundManager(this)
         val hapticManager = HapticManager(this)
         val hubPreferences = HubPreferences.getInstance(this)
+
+        // UMP Consent flow followed by MobileAds initialization
+        val consentManager = com.zubaluba.gamehub.ads.ConsentManager.getInstance(this)
+        consentManager.gatherConsent(this) {
+            com.zubaluba.gamehub.ads.UnifiedAdManager.initialize(applicationContext)
+        }
 
         setContent {
             MyApplicationTheme {
@@ -195,7 +239,8 @@ class GameViewModelHolder(
     private val protectSheepRepository: ProtectSheepRepository,
     private val funFrenzyRepository: FunFrenzyRepository,
     private val soundManager: SoundManager,
-    private val hapticManager: HapticManager
+    private val hapticManager: HapticManager,
+    private val context: android.content.Context
 ) {
     val colorSequenceViewModel by lazy { ColorSequenceViewModel(colorSequenceRepository) }
     val game2048ViewModel by lazy { Game2048ViewModel(game2048Repository) }
@@ -215,6 +260,19 @@ class GameViewModelHolder(
     val mrBulletViewModel by lazy { MrBulletViewModel(mrBulletRepository, soundManager, hapticManager) }
     val protectSheepViewModel by lazy { ProtectSheepViewModel(protectSheepRepository, soundManager, hapticManager) }
     val funFrenzyViewModel by lazy { FunFrenzyViewModel(funFrenzyRepository, soundManager, hapticManager) }
+    val appleWormViewModel by lazy { AppleWormViewModel(AppleWormRepository(context), soundManager, hapticManager) }
+    val helixJumpViewModel by lazy { HelixJumpViewModel(HelixJumpRepository(context), soundManager, hapticManager) }
+    val colorMazeViewModel by lazy { ColorMazeViewModel(ColorMazeRepository(context), soundManager, hapticManager) }
+    val sandLoopViewModel by lazy { SandLoopViewModel(SandLoopRepository(context), soundManager, hapticManager) }
+    val woodturningViewModel by lazy { WoodturningViewModel(WoodturningRepository(context), soundManager, hapticManager) }
+    val doodleJumpViewModel by lazy { DoodleJumpViewModel(DoodleJumpRepository(context), soundManager, hapticManager) }
+    val tombOfTheMaskViewModel by lazy { TombOfTheMaskViewModel(TombOfTheMaskRepository(context), soundManager, hapticManager) }
+    val crossyRoadViewModel by lazy { CrossyRoadViewModel(CrossyRoadRepository(context), soundManager, hapticManager) }
+    val paperIoViewModel by lazy { PaperIoViewModel(PaperIoRepository(context), soundManager, hapticManager) }
+    val holeIoViewModel by lazy { HoleIoViewModel(HoleIoRepository(context), soundManager, hapticManager) }
+    val seaBattleViewModel by lazy { SeaBattleViewModel(SeaBattleRepository(context), soundManager, hapticManager) }
+    val iqBoostViewModel by lazy { IQBoostViewModel(IQBoostRepository(context), soundManager, hapticManager) }
+    val ballGuysViewModel by lazy { BallGuysViewModel(BallGuysRepository(context), soundManager, hapticManager) }
 }
 
 @Composable
@@ -245,6 +303,7 @@ fun GameHubApp(
 ) {
     val navController = rememberNavController()
 
+    val context = LocalContext.current
     // Lazy ViewModels holder - ensures no heavy game loops or database operations run at startup
     val viewModelHolder = remember {
         GameViewModelHolder(
@@ -267,7 +326,8 @@ fun GameHubApp(
             protectSheepRepository = protectSheepRepository,
             funFrenzyRepository = funFrenzyRepository,
             soundManager = soundManager,
-            hapticManager = hapticManager
+            hapticManager = hapticManager,
+            context = context.applicationContext
         )
     }
 
@@ -878,6 +938,110 @@ fun GameHubApp(
                 onNavigateBack = {
                     navController.popBackStack()
                 }
+            )
+        }
+
+        // --- 1. APPLE WORM ---
+        composable("appleworm_game") {
+            AppleWormScreen(
+                viewModel = viewModelHolder.appleWormViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // --- 2. HELIX JUMP ---
+        composable("helixjump_game") {
+            HelixJumpScreen(
+                viewModel = viewModelHolder.helixJumpViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // --- 3. COLOR MAZE 3D ---
+        composable("colormaze3d_game") {
+            ColorMazeScreen(
+                viewModel = viewModelHolder.colorMazeViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // --- 4. SAND LOOP ---
+        composable("sandloop_game") {
+            SandLoopScreen(
+                viewModel = viewModelHolder.sandLoopViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // --- 5. WOODTURNING 3D ---
+        composable("woodturning_game") {
+            WoodturningScreen(
+                viewModel = viewModelHolder.woodturningViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // --- 6. DOODLE JUMP ---
+        composable("doodlejump_game") {
+            DoodleJumpScreen(
+                viewModel = viewModelHolder.doodleJumpViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // --- 7. TOMB OF THE MASK ---
+        composable("tombofthemask_game") {
+            TombOfTheMaskScreen(
+                viewModel = viewModelHolder.tombOfTheMaskViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // --- 8. CROSSY ROAD ---
+        composable("crossyroad_game") {
+            CrossyRoadScreen(
+                viewModel = viewModelHolder.crossyRoadViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // --- 9. PAPER.IO 2 ---
+        composable("paperio2_game") {
+            PaperIoScreen(
+                viewModel = viewModelHolder.paperIoViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // --- 10. HOLE.IO ---
+        composable("holeio_game") {
+            HoleIoScreen(
+                viewModel = viewModelHolder.holeIoViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // --- 11. SEA BATTLE 2 ---
+        composable("seabattle2_game") {
+            SeaBattleScreen(
+                viewModel = viewModelHolder.seaBattleViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // --- 12. IQ BOOST ---
+        composable("iqboost_game") {
+            IQBoostScreen(
+                viewModel = viewModelHolder.iqBoostViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // --- 13. BALL GUYS: MERGE PARTY ---
+        composable("ballguys_game") {
+            BallGuysScreen(
+                viewModel = viewModelHolder.ballGuysViewModel,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

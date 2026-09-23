@@ -40,8 +40,11 @@ class RopeRescueViewModel(
     val progressFlow = repository.progressFlow
     val completedLevelsFlow = repository.completedLevelsFlow
 
-    init {
-        startLevel(1)
+    // Levels and game loop are started on demand when the user or screen starts a level
+
+    fun stopGameLoop() {
+        gameLoopJob?.cancel()
+        spawnJob?.cancel()
     }
 
     fun startLevel(levelNumber: Int) {

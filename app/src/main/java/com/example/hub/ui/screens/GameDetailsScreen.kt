@@ -1,5 +1,6 @@
 package com.example.hub.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,7 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -188,10 +191,21 @@ fun GameDetailsScreen(
                             .padding(8.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        GameArtwork(
-                            gameId = game.id,
-                            modifier = Modifier.fillMaxSize()
-                        )
+                        if (game.id == com.example.hub.registry.GameRegistry.WATER_SORT_ID) {
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_water_sort_icon),
+                                contentDescription = game.name,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(RoundedCornerShape(16.dp)),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            GameArtwork(
+                                gameId = game.id,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))

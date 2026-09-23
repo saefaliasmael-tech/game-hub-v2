@@ -69,6 +69,13 @@ fun PullThePinHomeScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF261C14))
             )
         },
+        bottomBar = {
+            com.zubaluba.gamehub.ads.AdBanner(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+            )
+        },
         containerColor = Color(0xFF19120D)
     ) { paddingValues ->
         Column(

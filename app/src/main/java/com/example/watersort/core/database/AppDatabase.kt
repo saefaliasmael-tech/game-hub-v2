@@ -130,6 +130,7 @@ abstract class AppDatabase : RoomDatabase() {
                         }
                     }
                 })
+                .fallbackToDestructiveMigration()
                 .fallbackToDestructiveMigrationOnDowngrade()
                 .build()
                 INSTANCE = instance

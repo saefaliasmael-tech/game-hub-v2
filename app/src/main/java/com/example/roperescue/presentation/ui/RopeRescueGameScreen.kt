@@ -38,6 +38,18 @@ fun RopeRescueGameScreen(
     val state by viewModel.gameState.collectAsState()
     val soundEnabled by viewModel.soundEnabledFlow.collectAsState()
 
+    LaunchedEffect(Unit) {
+        if (state.hazards.isEmpty() && state.totalHostages == 0 && !state.isGameOver && !state.isWon) {
+            viewModel.startLevel(state.levelNumber.coerceAtLeast(1))
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.stopGameLoop()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(

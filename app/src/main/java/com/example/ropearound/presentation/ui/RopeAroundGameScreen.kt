@@ -35,6 +35,12 @@ fun RopeAroundGameScreen(
     val state by viewModel.gameState.collectAsState()
     val soundEnabled by viewModel.soundEnabledFlow.collectAsState()
 
+    LaunchedEffect(Unit) {
+        if (state.pegs.isEmpty() && !state.isWon) {
+            viewModel.startLevel(state.levelNumber.coerceAtLeast(1))
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(

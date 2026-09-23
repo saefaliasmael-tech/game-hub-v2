@@ -67,6 +67,13 @@ fun UnblockHomeScreen(
                     }
                 }
             )
+        },
+        bottomBar = {
+            com.zubaluba.gamehub.ads.AdBanner(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+            )
         }
     ) { padding ->
         Column(

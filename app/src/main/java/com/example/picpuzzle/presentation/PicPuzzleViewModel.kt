@@ -36,8 +36,10 @@ class PicPuzzleViewModel(
     val progressFlow = repository.progressFlow
     val completedLevelsFlow = repository.completedLevelsFlow
 
-    init {
-        startLevel(1)
+    // Levels are initialized when started by screen or user
+
+    fun stopTimer() {
+        timerJob?.cancel()
     }
 
     fun startLevel(levelNumber: Int) {

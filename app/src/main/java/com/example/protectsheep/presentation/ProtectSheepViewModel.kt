@@ -4,10 +4,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.protectsheep.core.engine.ProtectSheepEngine
+import com.example.protectsheep.core.engine.ProtectSheepPhysicsEngine
 import com.example.protectsheep.core.level.ProtectSheepLevelManager
-import com.example.protectsheep.core.model.Bee
-import com.example.protectsheep.core.model.ProtectSheepGameState
+import com.example.protectsheep.core.model.BarrierStroke
+import com.example.protectsheep.core.model.ProtectSheepLevelConfig
+import com.example.protectsheep.core.model.ProtectSheepState
+import com.example.protectsheep.core.model.SheepGamePhase
 import com.example.protectsheep.core.repository.ProtectSheepRepository
 import com.example.watersort.core.audio.GameSound
 import com.example.watersort.core.audio.HapticManager
@@ -19,163 +21,195 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlin.random.Random
+import kotlin.math.sqrt
 
 class ProtectSheepViewModel(
-    val repository: ProtectSheepRepository,
-    val soundManager: SoundManager,
-    val hapticManager: HapticManager
+    private val repository: ProtectSheepRepository,
+    private val soundManager: SoundManager,
+    private val hapticManager: HapticManager
 ) : ViewModel() {
 
-    private val _gameState = MutableStateFlow(ProtectSheepGameState())
-    val gameState: StateFlow<ProtectSheepGameState> = _gameState.asStateFlow()
-
-    private var simulationJob: Job? = null
+    private val _gameState = MutableStateFlow(ProtectSheepState())
+    val gameState: StateFlow<ProtectSheepState> = _gameState.asStateFlow()
 
     val soundEnabledFlow = repository.soundEnabledFlow
     val hapticEnabledFlow = repository.hapticEnabledFlow
-    val highestLevelFlow = repository.highestLevelFlow
     val progressFlow = repository.progressFlow
     val completedLevelsFlow = repository.completedLevelsFlow
 
-    init {
-        startLevel(1)
+    private var currentConfig: ProtectSheepLevelConfig = ProtectSheepLevelManager.getLevel(1)
+    private var simulationJob: Job? = null
+
+    fun stopSimulation() {
+        simulationJob?.cancel()
     }
 
     fun startLevel(levelNumber: Int) {
-        simulationJob?.cancel()
-
+        stopSimulation()
         val config = ProtectSheepLevelManager.getLevel(levelNumber)
+        currentConfig = config
 
-        _gameState.value = ProtectSheepGameState(
+        _gameState.value = ProtectSheepState(
             levelNumber = levelNumber,
-            sheepList = config.sheepList,
-            hives = config.hives,
-            hazards = config.hazards,
-            bees = emptyList(),
-            drawnPoints = emptyList(),
-            maxInk = config.maxInk,
-            usedInk = 0f,
-            isSimulating = false,
-            survivalTimeLeftSec = 10f,
-            isWon = false,
-            isGameOver = false,
+            phase = SheepGamePhase.DRAWING_BARRIER,
+            strokes = emptyList(),
+            currentStrokePoints = emptyList(),
+            totalInkUsed = 0f,
+            maxInkLength = config.maxInkLength,
+            sheepList = config.sheepList.map { it.copy() },
+            wolves = config.wolves.map { it.copy() },
+            timeRemainingSeconds = config.surviveSeconds,
+            totalSurviveSeconds = config.surviveSeconds,
             stars = 0
         )
     }
 
-    fun onDrawingStart(point: Offset) {
-        val current = _gameState.value
-        if (current.isSimulating || current.isWon || current.isGameOver) return
+    fun onTouchDown(point: Offset) {
+        val state = _gameState.value
+        if (state.phase != SheepGamePhase.DRAWING_BARRIER) return
+        if (state.totalInkUsed >= state.maxInkLength) return
 
-        _gameState.value = current.copy(drawnPoints = listOf(point), usedInk = 0f)
+        _gameState.value = state.copy(
+            currentStrokePoints = listOf(point)
+        )
     }
 
-    fun onDrawingMove(point: Offset) {
-        val current = _gameState.value
-        if (current.isSimulating || current.isWon || current.isGameOver) return
+    fun onTouchMove(point: Offset) {
+        val state = _gameState.value
+        if (state.phase != SheepGamePhase.DRAWING_BARRIER) return
+        if (state.currentStrokePoints.isEmpty()) return
 
-        val pts = current.drawnPoints.toMutableList()
-        pts.add(point)
+        val lastPoint = state.currentStrokePoints.last()
+        val dx = point.x - lastPoint.x
+        val dy = point.y - lastPoint.y
+        val dist = sqrt(dx * dx + dy * dy)
 
-        val len = ProtectSheepEngine.calculatePathLength(pts)
-        if (len <= current.maxInk) {
-            _gameState.value = current.copy(drawnPoints = pts, usedInk = len)
-        }
+        if (dist < 4f) return
+
+        val newTotalInk = state.totalInkUsed + dist
+        if (newTotalInk > state.maxInkLength) return
+
+        val updatedPoints = state.currentStrokePoints + point
+        _gameState.value = state.copy(
+            currentStrokePoints = updatedPoints,
+            totalInkUsed = newTotalInk
+        )
     }
 
-    fun onDrawingEnd() {
-        val current = _gameState.value
-        if (current.isSimulating || current.isWon || current.isGameOver) return
+    fun onTouchUp() {
+        val state = _gameState.value
+        if (state.phase != SheepGamePhase.DRAWING_BARRIER) return
 
-        if (current.drawnPoints.size >= 2) {
-            startSimulation()
-        }
-    }
-
-    fun clearDrawing() {
-        val current = _gameState.value
-        if (current.isWon) return
-        startLevel(current.levelNumber)
-    }
-
-    private fun startSimulation() {
-        val current = _gameState.value
-        if (current.isSimulating) return
-
-        // Spawn initial bees from hives
-        val bees = mutableListOf<Bee>()
-        val rng = Random(42)
-        for (hive in current.hives) {
-            for (i in 0 until hive.beeCount) {
-                val offsetAngle = rng.nextFloat() * 6.28f
-                val dist = 0.03f + rng.nextFloat() * 0.04f
-                val bx = hive.x + kotlin.math.cos(offsetAngle) * dist
-                val by = hive.y + kotlin.math.sin(offsetAngle) * dist
-                bees.add(Bee(bx, by, 0f, 0f))
+        if (state.currentStrokePoints.size >= 2) {
+            var strokeLen = 0f
+            for (i in 0 until state.currentStrokePoints.size - 1) {
+                val p1 = state.currentStrokePoints[i]
+                val p2 = state.currentStrokePoints[i + 1]
+                val dx = p2.x - p1.x
+                val dy = p2.y - p1.y
+                strokeLen += sqrt(dx * dx + dy * dy)
             }
+            val stroke = BarrierStroke(state.currentStrokePoints, strokeLen)
+            _gameState.value = state.copy(
+                strokes = state.strokes + stroke,
+                currentStrokePoints = emptyList()
+            )
+            if (hapticEnabledFlow.value) hapticManager.tap()
+        } else {
+            _gameState.value = state.copy(currentStrokePoints = emptyList())
         }
+    }
 
-        _gameState.value = current.copy(
-            bees = bees,
-            isSimulating = true,
-            survivalTimeLeftSec = 10f
+    fun undoLastStroke() {
+        val state = _gameState.value
+        if (state.phase != SheepGamePhase.DRAWING_BARRIER || state.strokes.isEmpty()) return
+
+        val last = state.strokes.last()
+        _gameState.value = state.copy(
+            strokes = state.strokes.dropLast(1),
+            totalInkUsed = (state.totalInkUsed - last.length).coerceAtLeast(0f)
+        )
+        if (hapticEnabledFlow.value) hapticManager.tap()
+    }
+
+    fun startSurviving() {
+        val state = _gameState.value
+        if (state.phase != SheepGamePhase.DRAWING_BARRIER) return
+
+        _gameState.value = state.copy(
+            phase = SheepGamePhase.SURVIVING
         )
 
-        if (soundEnabledFlow.value) soundManager.play(GameSound.KNIFE_THROW)
+        if (soundEnabledFlow.value) soundManager.play(GameSound.SELECT)
 
         simulationJob?.cancel()
         simulationJob = viewModelScope.launch {
-            val stepSec = 0.016f
+            val dt = 0.016f
             while (isActive) {
-                updatePhysics(stepSec)
+                val currentState = _gameState.value
+                if (currentState.phase != SheepGamePhase.SURVIVING) break
+
+                val newTime = currentState.timeRemainingSeconds - dt
+                if (newTime <= 0f) {
+                    handleVictory(currentState)
+                    break
+                }
+
+                var sheepEaten = false
+                ProtectSheepPhysicsEngine.updateSimulation(
+                    wolves = currentState.wolves,
+                    sheepList = currentState.sheepList,
+                    barriers = currentState.strokes,
+                    onSheepTouched = { sheep ->
+                        sheepEaten = true
+                    }
+                )
+
+                if (sheepEaten) {
+                    handleDefeat(currentState)
+                    break
+                }
+
+                _gameState.value = currentState.copy(
+                    timeRemainingSeconds = newTime,
+                    wolves = currentState.wolves.toList(),
+                    sheepList = currentState.sheepList.toList()
+                )
+
                 delay(16)
             }
         }
     }
 
-    private fun updatePhysics(dt: Float) {
-        val current = _gameState.value
-        if (current.isWon || current.isGameOver) return
-
-        val newTime = (current.survivalTimeLeftSec - dt).coerceAtLeast(0f)
-
-        val (updatedBees, anyStung) = ProtectSheepEngine.stepBees(
-            bees = current.bees,
-            sheepList = current.sheepList,
-            drawnPoints = current.drawnPoints,
-            hazards = current.hazards,
-            dt = dt
-        )
-
-        var isWon = false
-        var isGameOver = false
-        var stars = current.stars
-
-        if (anyStung) {
-            isGameOver = true
-            if (soundEnabledFlow.value) soundManager.play(GameSound.INVALID)
-            if (hapticEnabledFlow.value) hapticManager.error()
-            simulationJob?.cancel()
-        } else if (newTime <= 0f) {
-            isWon = true
-            stars = ProtectSheepEngine.calculateStars(current.inkRemainingRatio)
-            if (soundEnabledFlow.value) soundManager.play(GameSound.WIN)
-            if (hapticEnabledFlow.value) hapticManager.success()
-            simulationJob?.cancel()
-
-            viewModelScope.launch {
-                repository.saveLevelCompletion(current.levelNumber, stars)
-            }
+    private fun handleVictory(state: ProtectSheepState) {
+        val inkRemainingRatio = 1f - (state.totalInkUsed / state.maxInkLength).coerceIn(0f, 1f)
+        val stars = when {
+            inkRemainingRatio >= 0.55f -> 3
+            inkRemainingRatio >= 0.25f -> 2
+            else -> 1
         }
 
-        _gameState.value = current.copy(
-            bees = updatedBees,
-            survivalTimeLeftSec = newTime,
-            isWon = isWon,
-            isGameOver = isGameOver,
+        _gameState.value = state.copy(
+            phase = SheepGamePhase.WON,
+            timeRemainingSeconds = 0f,
             stars = stars
         )
+
+        if (soundEnabledFlow.value) soundManager.play(GameSound.WIN)
+        if (hapticEnabledFlow.value) hapticManager.success()
+
+        viewModelScope.launch {
+            repository.saveLevelCompletion(state.levelNumber, state.totalSurviveSeconds.toInt(), stars)
+        }
+    }
+
+    private fun handleDefeat(state: ProtectSheepState) {
+        _gameState.value = state.copy(
+            phase = SheepGamePhase.LOST
+        )
+
+        if (soundEnabledFlow.value) soundManager.play(GameSound.GAME_OVER)
+        if (hapticEnabledFlow.value) hapticManager.error()
     }
 
     fun restartLevel() {
@@ -183,16 +217,18 @@ class ProtectSheepViewModel(
     }
 
     fun nextLevel() {
-        startLevel(_gameState.value.levelNumber + 1)
+        val next = (_gameState.value.levelNumber + 1).coerceAtMost(ProtectSheepLevelManager.TOTAL_LEVELS)
+        startLevel(next)
     }
 
     fun toggleSound() {
-        repository.setSoundEnabled(!soundEnabledFlow.value)
+        val current = soundEnabledFlow.value
+        repository.setSoundEnabled(!current)
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        simulationJob?.cancel()
+    fun toggleHaptic() {
+        val current = hapticEnabledFlow.value
+        repository.setHapticEnabled(!current)
     }
 
     class Factory(

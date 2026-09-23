@@ -35,6 +35,18 @@ fun PullThePinGameScreen(
     val state by viewModel.gameState.collectAsState()
     val soundEnabled by viewModel.soundEnabledFlow.collectAsState()
 
+    LaunchedEffect(Unit) {
+        if (state.balls.isEmpty() && state.pins.isEmpty() && !state.isGameOver && !state.isWon) {
+            viewModel.startLevel(state.levelNumber.coerceAtLeast(1))
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.stopPhysicsLoop()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(

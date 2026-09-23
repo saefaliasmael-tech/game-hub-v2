@@ -72,6 +72,13 @@ fun MiniTDHomeScreen(
                 )
             )
         },
+        bottomBar = {
+            com.zubaluba.gamehub.ads.AdBanner(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+            )
+        },
         containerColor = Color(0xFF0D1B2A)
     ) { paddingValues ->
         Column(

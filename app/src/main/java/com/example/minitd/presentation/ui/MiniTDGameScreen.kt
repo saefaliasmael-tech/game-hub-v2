@@ -42,6 +42,18 @@ fun MiniTDGameScreen(
     val levelConfig = remember(state.levelNumber) { MiniTDLevelManager.getLevel(state.levelNumber) }
     val interactionSource = remember { MutableInteractionSource() }
 
+    LaunchedEffect(Unit) {
+        if (state.slots.isEmpty()) {
+            viewModel.startLevel(state.levelNumber.coerceAtLeast(1))
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.pauseGame()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(

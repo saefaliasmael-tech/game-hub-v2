@@ -3,25 +3,52 @@ package com.example.protectsheep.presentation.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.VolumeOff
+import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.protectsheep.core.level.ProtectSheepLevelManager
 import com.example.protectsheep.presentation.ProtectSheepViewModel
 
@@ -32,181 +59,243 @@ fun ProtectSheepHomeScreen(
     onNavigateBack: () -> Unit,
     onStartLevel: (Int) -> Unit
 ) {
-    val completedLevels by viewModel.completedLevelsFlow.collectAsState(initial = 0)
-    val highestUnlocked by viewModel.highestLevelFlow.collectAsState()
+    val completedCount by viewModel.completedLevelsFlow.collectAsState(initial = 0)
     val progressList by viewModel.progressFlow.collectAsState(initial = emptyList())
+    val soundEnabled by viewModel.soundEnabledFlow.collectAsState()
 
     val progressMap = remember(progressList) {
         progressList.associateBy { it.levelId }
+    }
+
+    val totalStars = remember(progressList) {
+        progressList.sumOf { it.stars }
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Column {
-                        Text(
-                            text = "Protect Sheep",
-                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                            color = Color.White
-                        )
-                        Text(
-                            text = "Shield the Flock from Angry Bees",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.White.copy(alpha = 0.7f)
-                        )
-                    }
+                    Text(
+                        text = "Protect Sheep",
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFF0FDF4)
+                    )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
+                    IconButton(
+                        onClick = onNavigateBack,
+                        modifier = Modifier.testTag("protectsheep_back_button")
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = Color.White
+                            tint = Color(0xFFF0FDF4)
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF1E3A1E))
+                actions = {
+                    IconButton(
+                        onClick = { viewModel.toggleSound() },
+                        modifier = Modifier.testTag("protectsheep_sound_toggle")
+                    ) {
+                        Icon(
+                            imageVector = if (soundEnabled) Icons.Default.VolumeUp else Icons.Default.VolumeOff,
+                            contentDescription = "Sound",
+                            tint = Color(0xFF10B981)
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFF0F172A)
+                )
             )
         },
-        containerColor = Color(0xFF0F240F)
-    ) { paddingValues ->
+        bottomBar = {
+            com.zubaluba.gamehub.ads.AdBanner(modifier = Modifier.fillMaxWidth())
+        },
+        containerColor = Color(0xFF0F172A)
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Quick Play Hero Card
+            // Stats Hero Banner
             Card(
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E3A1E)),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(
-                        1.dp,
-                        Brush.horizontalGradient(listOf(Color(0xFF22C55E), Color(0xFFEAB308))),
-                        RoundedCornerShape(20.dp)
-                    )
+                    .testTag("protectsheep_stats_card"),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFF1E293B)
+                )
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceAround,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "Pasture $highestUnlocked",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                            color = Color.White
+                            text = "$completedCount / ${ProtectSheepLevelManager.TOTAL_LEVELS}",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF10B981)
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "$completedLevels / ${ProtectSheepLevelManager.MAX_LEVELS} Flocks Saved",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFF22C55E)
+                            text = "Levels Protected",
+                            fontSize = 12.sp,
+                            color = Color(0xFF94A3B8)
                         )
                     }
 
-                    Button(
-                        onClick = { onStartLevel(highestUnlocked.coerceAtMost(ProtectSheepLevelManager.MAX_LEVELS)) },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF22C55E)),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color(0xFF0F240F))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("PLAY", fontWeight = FontWeight.Bold, color = Color(0xFF0F240F))
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .height(40.dp)
+                            .background(Color(0xFF334155))
+                    )
+
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = null,
+                                tint = Color(0xFFFBBF24),
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "$totalStars",
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFFBBF24)
+                            )
+                        }
+                        Text(
+                            text = "Stars Earned",
+                            fontSize = 12.sp,
+                            color = Color(0xFF94A3B8)
+                        )
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            val nextLevel = (completedCount + 1).coerceAtMost(ProtectSheepLevelManager.TOTAL_LEVELS)
+            Button(
+                onClick = { onStartLevel(nextLevel) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(54.dp)
+                    .testTag("protectsheep_play_next_button"),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF059669)
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = null,
+                    tint = Color.White
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Play Level $nextLevel",
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             Text(
-                text = "Pasture Puzzles",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = Color.White
+                text = "Select Pasture Level (1 - 100)",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF94A3B8),
+                modifier = Modifier.align(Alignment.Start)
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // 100 Levels Grid
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(minSize = 64.dp),
-                modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.weight(1f)
             ) {
-                items((1..ProtectSheepLevelManager.MAX_LEVELS).toList()) { levelNum ->
-                    val isUnlocked = levelNum <= highestUnlocked
-                    val progress = progressMap[levelNum]
-                    val isCompleted = progress?.isCompleted == true
-                    val stars = progress?.stars ?: 0
+                items(ProtectSheepLevelManager.TOTAL_LEVELS) { index ->
+                    val levelNum = index + 1
+                    val entity = progressMap[levelNum]
+                    val isUnlocked = levelNum == 1 || (entity?.isUnlocked == true) || levelNum <= (completedCount + 1)
+                    val isCompleted = entity?.isCompleted == true
+                    val stars = entity?.stars ?: 0
+
+                    val bgBrush = when {
+                        isCompleted -> Brush.verticalGradient(listOf(Color(0xFF065F46), Color(0xFF047857)))
+                        isUnlocked -> Brush.verticalGradient(listOf(Color(0xFF1E293B), Color(0xFF0F172A)))
+                        else -> Brush.verticalGradient(listOf(Color(0xFF1E293B).copy(alpha = 0.4f), Color(0xFF0F172A).copy(alpha = 0.4f)))
+                    }
 
                     Box(
                         modifier = Modifier
-                            .aspectRatio(1f)
+                            .size(64.dp)
                             .clip(RoundedCornerShape(14.dp))
-                            .background(
-                                when {
-                                    isCompleted -> Color(0xFF2D5A27)
-                                    isUnlocked -> Color(0xFF1E3A1E)
-                                    else -> Color(0xFF0F240F).copy(alpha = 0.6f)
-                                }
-                            )
+                            .background(bgBrush)
                             .border(
-                                width = if (levelNum == highestUnlocked) 2.dp else 1.dp,
-                                color = when {
-                                    levelNum == highestUnlocked -> Color(0xFF22C55E)
-                                    isCompleted -> Color(0xFFEAB308)
-                                    isUnlocked -> Color(0xFF386633)
-                                    else -> Color(0xFF1E3A1E)
-                                },
+                                width = if (isCompleted) 1.5.dp else 1.dp,
+                                color = if (isCompleted) Color(0xFF10B981) else if (isUnlocked) Color(0xFF334155) else Color(0xFF1E293B),
                                 shape = RoundedCornerShape(14.dp)
                             )
-                            .clickable(enabled = isUnlocked) {
-                                onStartLevel(levelNum)
-                            },
+                            .clickable(enabled = isUnlocked) { onStartLevel(levelNum) }
+                            .testTag("protectsheep_level_$levelNum"),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (isUnlocked) {
+                        if (!isUnlocked) {
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = "Locked",
+                                tint = Color(0xFF475569),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        } else {
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
                                 Text(
                                     text = "$levelNum",
-                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                    color = if (isCompleted) Color(0xFFEAB308) else Color.White
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isCompleted) Color.White else Color(0xFFE2E8F0)
                                 )
-                                if (isCompleted) {
+
+                                if (isCompleted && stars > 0) {
                                     Row(
                                         horizontalArrangement = Arrangement.Center,
-                                        modifier = Modifier.padding(top = 2.dp)
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        repeat(stars.coerceAtLeast(1)) {
+                                        repeat(3) { starIndex ->
                                             Icon(
                                                 imageVector = Icons.Default.Star,
                                                 contentDescription = null,
-                                                tint = Color(0xFFFFD166),
+                                                tint = if (starIndex < stars) Color(0xFFFBBF24) else Color(0xFF475569),
                                                 modifier = Modifier.size(10.dp)
                                             )
                                         }
                                     }
                                 }
                             }
-                        } else {
-                            Icon(
-                                imageVector = Icons.Default.Lock,
-                                contentDescription = "Locked",
-                                tint = Color(0xFF386633),
-                                modifier = Modifier.size(18.dp)
-                            )
                         }
                     }
                 }

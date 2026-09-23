@@ -70,6 +70,13 @@ fun MemoryHomeScreen(
                     }
                 }
             )
+        },
+        bottomBar = {
+            com.zubaluba.gamehub.ads.AdBanner(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+            )
         }
     ) { padding ->
         LazyColumn(

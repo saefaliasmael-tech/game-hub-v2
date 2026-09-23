@@ -137,7 +137,12 @@
     <string name="tutorial_step_3">املأ كل قارورة بلون واحد للفوز بالمرحلة!</string>
     <string name="got_it">فهمت!</string>
     <string name="not_enough_coins">لا توجد عملات كافية!</string>
-    <string name="ad_not_available">الإعلان غير متاح في وضع عدم الاتصال</string>
+    <string name="ad_not_available">الإعلان غير متاح حالياً، حاول بعد قليل.</string>
+    <string name="ad_offline">لا توجد إعلانات في وضع عدم الاتصال</string>
+    <string name="watch_ad_reward">مشاهدة إعلان (+50 قطعة نقدية)</string>
+    <string name="ad_reward_claimed">تم الحصول على +50 قطعة نقدية!</string>
+    <string name="privacy_options">خيارات الخصوصية</string>
+    <string name="privacy_options_desc">إدارة تفضيلات الموافقة الإعلانية والخصوصية</string>
     <string name="invalid_move_same_bottle">اختر قارورة أخرى للصب فيها</string>
     <string name="invalid_move_source_empty">هذه القارورة فارغة</string>
     <string name="invalid_move_target_full">القارورة ممتلئة بالكامل</string>
@@ -145,7 +150,6 @@
     <string name="invalid_move_already_solved">هذه القارورة مكتملة بالفعل</string>
     <string name="invalid_move_general">حركة غير صالحة</string>
     <string name="watch_ad">شاهد إعلان</string>
-    <string name="watch_ad_reward">شاهد إعلان (%s)</string>
     <string name="reward_earned">تم الحصول على المكافأة!</string>
     <string name="ad_loading">جاري تحميل الإعلان…</string>
 </resources>

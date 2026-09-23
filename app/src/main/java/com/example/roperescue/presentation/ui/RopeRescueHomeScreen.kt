@@ -69,6 +69,13 @@ fun RopeRescueHomeScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF1E293B))
             )
         },
+        bottomBar = {
+            com.zubaluba.gamehub.ads.AdBanner(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+            )
+        },
         containerColor = Color(0xFF0F172A)
     ) { paddingValues ->
         Column(

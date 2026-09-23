@@ -520,6 +520,12 @@ fun HomeScreen(
             }
 
             Spacer(modifier = Modifier.height(14.dp))
+
+            com.zubaluba.gamehub.ads.AdBanner(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp)
+            )
         }
     }
 }

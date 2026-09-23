@@ -1,61 +1,68 @@
 package com.example.protectsheep.core.model
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 
-data class Sheep(
+data class SheepTarget(
     val id: Int,
     var x: Float,
     var y: Float,
-    val radius: Float = 0.05f,
-    var isStung: Boolean = false
-)
+    val radius: Float = 18f,
+    var isAlive: Boolean = true
+) {
+    val bounds: Rect get() = Rect(x - radius, y - radius, x + radius, y + radius)
+}
 
-data class Hive(
+enum class HazardType {
+    WOLF,
+    BEE_SWARM,
+    FALLING_BOULDER
+}
+
+data class WolfAttacker(
     val id: Int,
-    val x: Float,
-    val y: Float,
-    val beeCount: Int = 12
-)
-
-data class Bee(
     var x: Float,
     var y: Float,
-    var vx: Float,
-    var vy: Float,
-    val radius: Float = 0.015f
-)
+    var vx: Float = 0f,
+    var vy: Float = 0f,
+    val speed: Float = 2.4f,
+    val radius: Float = 16f,
+    val type: HazardType = HazardType.WOLF
+) {
+    val bounds: Rect get() = Rect(x - radius, y - radius, x + radius, y + radius)
+}
 
-data class Hazard(
-    val x1: Float,
-    val y1: Float,
-    val x2: Float,
-    val y2: Float,
-    val isSpike: Boolean = false
+data class BarrierStroke(
+    val points: List<Offset>,
+    val length: Float
 )
 
 data class ProtectSheepLevelConfig(
     val levelNumber: Int,
-    val sheepList: List<Sheep>,
-    val hives: List<Hive>,
-    val hazards: List<Hazard>,
-    val maxInk: Float = 1.5f
+    val title: String,
+    val sheepList: List<SheepTarget>,
+    val wolves: List<WolfAttacker>,
+    val maxInkLength: Float = 950f,
+    val surviveSeconds: Float = 8f
 )
 
-data class ProtectSheepGameState(
-    val levelNumber: Int = 1,
-    val sheepList: List<Sheep> = emptyList(),
-    val hives: List<Hive> = emptyList(),
-    val hazards: List<Hazard> = emptyList(),
-    val bees: List<Bee> = emptyList(),
-    val drawnPoints: List<Offset> = emptyList(),
-    val maxInk: Float = 1.5f,
-    val usedInk: Float = 0f,
-    val isSimulating: Boolean = false,
-    val survivalTimeLeftSec: Float = 10f,
-    val isWon: Boolean = false,
-    val isGameOver: Boolean = false,
-    val stars: Int = 0
-) {
-    val inkRemainingRatio: Float
-        get() = ((maxInk - usedInk) / maxInk).coerceIn(0f, 1f)
+enum class SheepGamePhase {
+    DRAWING_BARRIER,
+    SURVIVING,
+    WON,
+    LOST
 }
+
+data class ProtectSheepState(
+    val levelNumber: Int = 1,
+    val phase: SheepGamePhase = SheepGamePhase.DRAWING_BARRIER,
+    val strokes: List<BarrierStroke> = emptyList(),
+    val currentStrokePoints: List<Offset> = emptyList(),
+    val totalInkUsed: Float = 0f,
+    val maxInkLength: Float = 950f,
+    val sheepList: List<SheepTarget> = emptyList(),
+    val wolves: List<WolfAttacker> = emptyList(),
+    val timeRemainingSeconds: Float = 8f,
+    val totalSurviveSeconds: Float = 8f,
+    val stars: Int = 0
+)

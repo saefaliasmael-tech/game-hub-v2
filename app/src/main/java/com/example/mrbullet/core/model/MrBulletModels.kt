@@ -1,55 +1,88 @@
 package com.example.mrbullet.core.model
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 
-data class Enemy(
+data class HeroShooter(
+    val x: Float,
+    val y: Float,
+    val aimAngleRad: Float = 0f
+)
+
+data class EnemyTarget(
     val id: Int,
-    var x: Float,
-    var y: Float,
-    val width: Float = 0.08f,
-    val height: Float = 0.12f,
-    var isDead: Boolean = false
+    val x: Float,
+    val y: Float,
+    val width: Float = 40f,
+    val height: Float = 65f,
+    var isAlive: Boolean = true,
+    val isArmored: Boolean = false
+) {
+    val bounds: Rect get() = Rect(x - width / 2f, y - height, x + width / 2f, y)
+}
+
+data class TntBarrel(
+    val id: Int,
+    val x: Float,
+    val y: Float,
+    val width: Float = 36f,
+    val height: Float = 44f,
+    var isExploded: Boolean = false,
+    val explosionRadius: Float = 110f
+) {
+    val bounds: Rect get() = Rect(x - width / 2f, y - height, x + width / 2f, y)
+}
+
+enum class BarrierType {
+    METAL_WALL,
+    WOOD_CRATE,
+    STEEL_BEAM
+}
+
+data class MrBulletWall(
+    val bounds: Rect,
+    val type: BarrierType = BarrierType.METAL_WALL
 )
 
-data class Wall(
-    val x1: Float,
-    val y1: Float,
-    val x2: Float,
-    val y2: Float,
-    val isDestructible: Boolean = false,
-    var isDestroyed: Boolean = false,
-    val isTnt: Boolean = false
-)
-
-data class Bullet(
+data class ActiveBullet(
     var x: Float,
     var y: Float,
     var vx: Float,
     var vy: Float,
-    var bouncesLeft: Int = 4,
-    var isAlive: Boolean = true
+    val radius: Float = 5f,
+    var bouncesLeft: Int = 6,
+    var isAlive: Boolean = true,
+    val trail: MutableList<Offset> = mutableListOf()
 )
 
 data class MrBulletLevelConfig(
     val levelNumber: Int,
-    val heroX: Float,
-    val heroY: Float,
-    val maxBullets: Int,
-    val enemies: List<Enemy>,
-    val walls: List<Wall>
+    val title: String,
+    val hero: HeroShooter,
+    val maxBullets: Int = 3,
+    val enemies: List<EnemyTarget>,
+    val barrels: List<TntBarrel> = emptyList(),
+    val walls: List<MrBulletWall> = emptyList()
 )
 
-data class MrBulletGameState(
+enum class BulletGamePhase {
+    AIMING,
+    BULLET_FLYING,
+    WON,
+    LOST
+}
+
+data class MrBulletState(
     val levelNumber: Int = 1,
-    val heroX: Float = 0.15f,
-    val heroY: Float = 0.75f,
-    val bulletsLeft: Int = 3,
+    val phase: BulletGamePhase = BulletGamePhase.AIMING,
+    val bulletsRemaining: Int = 3,
     val maxBullets: Int = 3,
-    val activeBullets: List<Bullet> = emptyList(),
-    val enemies: List<Enemy> = emptyList(),
-    val walls: List<Wall> = emptyList(),
-    val aimAngle: Float? = null,
-    val isWon: Boolean = false,
-    val isGameOver: Boolean = false,
-    val stars: Int = 0
+    val aimAngleRad: Float = 0f,
+    val isAiming: Boolean = false,
+    val trajectoryPoints: List<Offset> = emptyList(),
+    val activeBullets: List<ActiveBullet> = emptyList(),
+    val enemies: List<EnemyTarget> = emptyList(),
+    val barrels: List<TntBarrel> = emptyList(),
+    val stars: Int = 0,
+    val score: Int = 0
 )

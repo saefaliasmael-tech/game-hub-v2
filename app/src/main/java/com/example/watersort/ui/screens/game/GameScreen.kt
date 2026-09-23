@@ -63,17 +63,17 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import android.app.Activity
-import com.example.ads.AdManager
-import com.example.ads.ZubaLubaRewardedButton
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import android.app.Activity
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.ui.platform.LocalContext
 import com.example.R
 import com.example.watersort.core.economy.EconomyConfig
 import com.example.watersort.core.model.LiquidColor
@@ -86,6 +86,7 @@ import com.example.watersort.ui.components.GameCoinPill
 import com.example.watersort.ui.components.LiquidPourStream
 import com.example.watersort.ui.components.TactileGameButton
 import com.example.watersort.ui.components.TactileIconButton
+import com.zubaluba.gamehub.ads.UnifiedAdManager
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -96,10 +97,10 @@ fun GameScreen(
     onNavigateBack: () -> Unit,
     onNavigateNextLevel: (Int) -> Unit
 ) {
-    val context = LocalContext.current
-    val activity = context as? Activity
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+    val activity = context as? Activity
     val theme = remember(uiState.themeId) { ThemeConfig.getTheme(uiState.themeId) }
     val worldInfo = remember(levelId) { WorldConfig.forLevel(levelId) }
 
@@ -324,12 +325,7 @@ fun GameScreen(
                 text = { Text(stringResource(R.string.restart_confirm_desc), color = Color(0xFFCBD5E1)) },
                 confirmButton = {
                     Button(
-                        onClick = {
-                            viewModel.dismissRestart()
-                            AdManager.recordGameLoss("watersort", activity) {
-                                viewModel.confirmRestart()
-                            }
-                        },
+                        onClick = { viewModel.confirmRestart() },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE11D48))
                     ) {
                         Text(stringResource(R.string.yes))
@@ -351,12 +347,7 @@ fun GameScreen(
                 title = { Text(stringResource(R.string.stuck_title), color = Color(0xFFFBBF24)) },
                 text = { Text(stringResource(R.string.stuck_desc), color = Color(0xFFCBD5E1)) },
                 confirmButton = {
-                    Button(onClick = {
-                        viewModel.dismissStuck()
-                        AdManager.recordGameLoss("watersort", activity) {
-                            viewModel.confirmRestart()
-                        }
-                    }) {
+                    Button(onClick = { viewModel.confirmRestart() }) {
                         Text(stringResource(R.string.restart))
                     }
                 },
@@ -379,19 +370,24 @@ fun GameScreen(
                 starsEarned = uiState.gameState?.starsEarned ?: 3,
                 coinsEarned = uiState.coinsEarnedOnWin,
                 isPerfectRun = uiState.isPerfectRun,
+                adRewardState = uiState.adRewardState,
+                onWatchAd = {
+                    if (activity != null) {
+                        viewModel.claimRewardedAd(activity)
+                    }
+                },
                 levelId = levelId,
                 onNextLevel = {
-                    AdManager.recordGameWin("watersort", activity) {
-                        onNavigateNextLevel(levelId + 1)
+                    if (activity != null) {
+                        UnifiedAdManager.getInstance(activity).showInterstitial(activity)
                     }
+                    onNavigateNextLevel(levelId + 1)
                 },
                 onHome = {
-                    AdManager.recordGameWin("watersort", activity) {
-                        onNavigateBack()
+                    if (activity != null) {
+                        UnifiedAdManager.getInstance(activity).showInterstitial(activity)
                     }
-                },
-                onRewardEarned = {
-                    viewModel.onAdRewardEarned(50)
+                    onNavigateBack()
                 }
             )
         }
@@ -408,10 +404,11 @@ private fun VictoryDialog(
     starsEarned: Int,
     coinsEarned: Int,
     isPerfectRun: Boolean,
+    adRewardState: AdRewardState,
+    onWatchAd: () -> Unit,
     levelId: Int,
     onNextLevel: () -> Unit,
-    onHome: () -> Unit,
-    onRewardEarned: () -> Unit = {}
+    onHome: () -> Unit
 ) {
     val star1Scale = remember { Animatable(0f) }
     val star2Scale = remember { Animatable(0f) }
@@ -539,16 +536,51 @@ private fun VictoryDialog(
                     )
                 }
 
+                // Rewarded Ad Button (+50 Coins)
+                Spacer(modifier = Modifier.height(14.dp))
+                Button(
+                    onClick = onWatchAd,
+                    enabled = adRewardState == AdRewardState.AVAILABLE,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (adRewardState == AdRewardState.CLAIMED) Color(0xFF334155) else Color(0xFFF59E0B),
+                        disabledContainerColor = Color(0xFF334155)
+                    ),
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .testTag("rewarded_ad_button")
+                ) {
+                    when (adRewardState) {
+                        AdRewardState.AVAILABLE -> {
+                            Icon(imageVector = Icons.Default.PlayCircle, contentDescription = null, tint = Color.Black)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(R.string.watch_ad_reward),
+                                color = Color.Black,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        AdRewardState.LOADING, AdRewardState.SHOWING -> {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
+                        }
+                        AdRewardState.CLAIMED -> {
+                            Icon(imageVector = Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF10B981))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(R.string.ad_reward_claimed),
+                                color = Color(0xFF94A3B8),
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(20.dp))
-
-                // Optional Rewarded Ad: Bonus Coins
-                ZubaLubaRewardedButton(
-                    rewardDescription = "+50 🪙",
-                    onRewardEarned = { _, _ -> onRewardEarned() },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
 
                 // Next Level Tactile Button
                 TactileGameButton(

@@ -33,6 +33,18 @@ fun PicPuzzleGameScreen(
     val state by viewModel.gameState.collectAsState()
     val soundEnabled by viewModel.soundEnabledFlow.collectAsState()
 
+    LaunchedEffect(Unit) {
+        if (state.tiles.isEmpty() && !state.isSolved) {
+            viewModel.startLevel(state.levelNumber.coerceAtLeast(1))
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.stopTimer()
+        }
+    }
+
     val formattedTime = remember(state.elapsedTimeSeconds) {
         val mins = state.elapsedTimeSeconds / 60
         val secs = state.elapsedTimeSeconds % 60

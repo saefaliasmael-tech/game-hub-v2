@@ -71,6 +71,13 @@ fun RopeAroundHomeScreen(
                 )
             )
         },
+        bottomBar = {
+            com.zubaluba.gamehub.ads.AdBanner(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+            )
+        },
         containerColor = Color(0xFF1A1B2F)
     ) { paddingValues ->
         Column(

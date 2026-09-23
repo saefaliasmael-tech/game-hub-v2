@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
-import kotlin.math.max
 
 class ProtectSheepRepository(
     private val progressDao: GameProgressDao,
@@ -46,14 +45,14 @@ class ProtectSheepRepository(
     val progressFlow: Flow<List<GameProgressEntity>> = progressDao.getProgressForGame(GAME_ID)
     val completedLevelsFlow: Flow<Int> = progressDao.getCompletedLevelsCount(GAME_ID)
 
-    suspend fun saveLevelCompletion(levelId: Int, stars: Int, score: Int = 100) = withContext(Dispatchers.IO) {
+    suspend fun saveLevelCompletion(levelId: Int, remainingSeconds: Int, stars: Int) = withContext(Dispatchers.IO) {
         val entity = GameProgressEntity(
             gameId = GAME_ID,
             levelId = levelId,
             isUnlocked = true,
             isCompleted = true,
             stars = stars,
-            bestScore = score,
+            bestScore = remainingSeconds,
             updatedAt = System.currentTimeMillis()
         )
         progressDao.saveProgress(entity)
@@ -71,9 +70,12 @@ class ProtectSheepRepository(
             progressDao.saveProgress(nextLevel)
         }
 
-        val newHighest = max(_highestLevelFlow.value, levelId + 1)
-        _highestLevelFlow.value = newHighest
-        prefs?.edit()?.putInt(KEY_HIGHEST_LEVEL, newHighest)?.apply()
+        val currentHighest = _highestLevelFlow.value
+        if (levelId >= currentHighest && levelId < TOTAL_LEVELS) {
+            val newHighest = levelId + 1
+            _highestLevelFlow.value = newHighest
+            prefs?.edit()?.putInt(KEY_HIGHEST_LEVEL, newHighest)?.apply()
+        }
     }
 
     fun setSoundEnabled(enabled: Boolean) {
